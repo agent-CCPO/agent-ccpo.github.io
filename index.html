@@ -1,0 +1,608 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CCPO | Contextual Credit Policy Optimization</title>
+  <meta name="description" content="CCPO assigns step-level credit to LLM agents by weighting observation-matched peers by contextual similarity and combining history-conditioned return credit with realized future progress. No value critic, no extra environment interactions.">
+  <link rel="canonical" href="https://agent-ccpo.github.io/ccpo.github.io/">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Contextual Credit Policy Optimization">
+  <meta property="og:description" content="Critic-free, step-level credit for long-horizon LLM agents: contextual peer weighting plus history and future views of credit.">
+  <meta property="og:url" content="https://agent-ccpo.github.io/ccpo.github.io/">
+  <meta property="og:image" content="https://agent-ccpo.github.io/ccpo.github.io/static/img/social-card.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="theme-color" content="#0c0f16">
+  <link rel="icon" href="static/img/favicon.svg" type="image/svg+xml">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="static/css/site.css">
+</head>
+<body>
+
+<header class="nav on-night">
+  <div class="wrap">
+    <a class="brand" href="#top" aria-label="CCPO, back to top">
+      <span class="mks" aria-hidden="true"><i class="mk mk-h"></i><i class="mk mk-h"></i><i class="mk mk-a"></i><i class="mk mk-f"></i><i class="mk mk-f"></i></span>
+      CCPO
+    </a>
+    <nav class="nav-links" aria-label="Sections">
+      <a href="#overview">Overview</a>
+      <a href="#method">Method</a>
+      <a href="#results">Results</a>
+      <a href="#ablations">Ablations</a>
+      <a href="#analysis">Analysis</a>
+      <a href="#cite">Cite</a>
+    </nav>
+    <a class="nav-cta" href="static/paper/ccpo.pdf">Paper</a>
+  </div>
+</header>
+
+<main id="top">
+
+  <!-- ============================== HERO ============================== -->
+  <section class="hero on-night">
+    <div class="wrap hero-main">
+      <h1><span>Contextual Credit</span> <span class="thin">Policy Optimization</span></h1>
+      <p class="hero-lede">
+        Step-level credit for long-horizon LLM agents. CCPO weighs each observation-matched peer by
+        <b>how similar its context is</b>, then credits a step for its <b>history-conditioned return</b>
+        and for the <b>progress realized shortly after</b>. No value critic, no extra environment interactions.
+      </p>
+      <div class="hero-people">
+        <p class="authors">
+          <span>Huiwen Han<sup>1,2,&dagger;</sup>,</span>
+          <span>Ziyao Zeng<sup>3</sup>,</span>
+          <span>Zihao Zhu<sup>2</sup>,</span>
+          <span>Sisong Bei<sup>4</sup>,</span>
+          <span>Hao Wang<sup>2</sup>,</span>
+          <span>Hongyu Xu<sup>5</sup>,</span>
+          <span>Yan Han<sup>6</sup>,</span>
+          <span>Degui Zhi<sup>3</sup>,</span>
+          <span>Zhiwen Fan<sup>2</sup></span>
+        </p>
+        <p class="affils">
+          <sup>1</sup>Stanford University &ensp; <sup>2</sup>Texas A&amp;M University &ensp; <sup>3</sup>Yale University &ensp;
+          <sup>4</sup>Amazon &ensp; <sup>5</sup>Meta &ensp; <sup>6</sup>Microsoft
+          <span class="note"><sup>&dagger;</sup>Project lead. Huiwen Han was a visiting student at Texas A&amp;M University during this work.</span>
+        </p>
+      </div>
+      <div class="hero-cta">
+        <a class="btn btn-light" href="static/paper/ccpo.pdf">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 2.5h6.5L15.5 6.5V17a.5.5 0 0 1-.5.5H5a.5.5 0 0 1-.5-.5V3a.5.5 0 0 1 .5-.5Z"/><path d="M11.5 2.5v4h4M7.5 10.5h5M7.5 13.5h5"/></svg>
+          Read the paper
+        </a>
+        <a class="btn btn-ghost" href="https://github.com/phai-lab/CCPO">
+          <svg viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M10 1.7a8.3 8.3 0 0 0-2.63 16.18c.42.08.57-.18.57-.4v-1.55c-2.31.5-2.8-.98-2.8-.98-.38-.96-.92-1.22-.92-1.22-.76-.51.05-.5.05-.5.84.06 1.28.86 1.28.86.74 1.27 1.95.9 2.42.69.08-.54.29-.9.53-1.11-1.84-.21-3.78-.92-3.78-4.1 0-.9.32-1.65.86-2.23-.09-.21-.37-1.05.08-2.2 0 0 .7-.22 2.28.85a7.9 7.9 0 0 1 4.16 0c1.58-1.07 2.28-.85 2.28-.85.45 1.15.17 1.99.08 2.2.54.58.86 1.33.86 2.23 0 3.19-1.94 3.89-3.79 4.1.3.26.56.76.56 1.54v2.28c0 .22.15.48.57.4A8.3 8.3 0 0 0 10 1.7Z"/></svg>
+          Code
+        </a>
+        <a class="btn btn-ghost" href="#cite">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7.5 5.5c-2 .8-3 2.4-3 4.6v4.4h4v-4h-2c0-1.3.5-2.2 1.7-2.8M15.5 5.5c-2 .8-3 2.4-3 4.6v4.4h4v-4h-2c0-1.3.5-2.2 1.7-2.8"/></svg>
+          BibTeX
+        </a>
+      </div>
+
+      <figure class="figure hero-figure">
+        <button class="figure-frame" data-zoom="static/figures/teaser.svg" data-caption="Overview of CCPO (Figure 1).">
+          <img src="static/figures/teaser.svg" alt="Overview of CCPO in four panels: match peers by observation across trajectories, weight them by context, assign historical and future credit, and update the policy with PPO and a KL penalty.">
+        </button>
+        <figcaption><b>Overview of CCPO.</b> CCPO combines contextually weighted peer comparisons and short-horizon future progress for critic-free step-level credit assignment.</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <!-- ============================ OVERVIEW ============================ -->
+  <section class="section" id="overview">
+    <div class="wrap">
+      <div class="tldr reveal">
+        <div class="tldr-text">
+          <span class="label">TL;DR</span>
+          Group-based RL compares steps that saw the same observation. CCPO asks two further questions of every
+          step: <span class="c-peer">which peers actually share its context</span>, and
+          <span class="c-fut">did the next few steps move toward success</span>, or was the trajectory already on
+          a good path?
+        </div>
+        <div class="questions">
+          <article class="card question q1">
+            <h3>Which peers should count?</h3>
+            <p>Identical observations can occur after different preceding actions, reasoning, exploration depth and accumulated context. Peers in a group are not equally informative for a particular query.</p>
+            <p class="answer">&rarr; Weight each peer by contextual similarity to the query.</p>
+          </article>
+          <article class="card question q2">
+            <h3>Did this step make progress?</h3>
+            <p>A favorable terminal outcome can hide redundant actions or detours inside a successful trajectory.</p>
+            <p class="answer">&rarr; Pair history-conditioned return credit with the value change over a short realized continuation.</p>
+          </article>
+        </div>
+      </div>
+
+      <div class="contribs reveal">
+        <h2>Contributions</h2>
+        <ol class="contrib">
+          <li><b>Dual-view contextual credit from history and future progress.</b>Step-level credit combines a history-conditioned return residual with estimated value change over a future horizon, capturing outcome-relative performance and local progress.</li>
+          <li><b>Contextual similarity for step-level peer weighting.</b>Peer returns are aggregated with continuous weights set by the similarity between query and peer context representations, producing a context-dependent baseline.</li>
+          <li><b>Semantic and structural context representations.</b>Hidden states of recent interactions are combined with accumulated trajectory statistics, enabling context-sensitive comparisons without training an auxiliary value network.</li>
+        </ol>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================= METHOD ============================= -->
+  <section class="section is-white" id="method">
+    <div class="wrap">
+      <header class="section-head has-aside reveal">
+        <h2>Method</h2>
+        <div class="seg" data-control="method-view" aria-label="Method view"></div>
+        <p class="lede">CCPO extends critic-free group estimation to individual steps. It weights observation-matched peers by contextual similarity, and uses the same weighted readout for return baselines and for outcome values.</p>
+      </header>
+
+      <!-- Animated walkthrough of the method; the rollout rows are built in viz.js -->
+      <figure class="figure method-views reveal">
+      <div class="method-cell">
+      <div class="stage on-night" id="stage" data-phase="1" aria-label="CCPO in four steps">
+        <div class="stage-tabs" role="tablist" aria-label="CCPO in four steps">
+          <button class="stage-tab is-on" role="tab" aria-selected="true" data-phase="1"><b>01</b>Match peers</button>
+          <button class="stage-tab" role="tab" aria-selected="false" data-phase="2"><b>02</b>Weight by context</button>
+          <button class="stage-tab" role="tab" aria-selected="false" data-phase="3"><b>03</b>Assign credit</button>
+          <button class="stage-tab" role="tab" aria-selected="false" data-phase="4"><b>04</b>Update policy</button>
+        </div>
+        <div class="stage-body">
+          <div class="stage-board">
+            <div class="board" aria-hidden="true"></div>
+            <p class="stage-keys stage-legend">
+              <span class="keyitem"><span class="key-top"><i class="sw q"></i>current</span><small>query (i, t)</small></span>
+              <span class="keyitem"><span class="key-top"><i class="sw p"></i>peer</span><small>(j, s) &isin; &#x1D4AB;<sub>i,t</sub></small></span>
+              <span class="keyitem"><span class="key-top"><i class="sw x"></i>excluded</span><small>(same trajectory)</small></span>
+              <span class="keyitem"><span class="key-top"><i class="sw h"></i>history</span><small>(&minus;K<sub>H</sub> steps)</small></span>
+              <span class="keyitem"><span class="key-top"><i class="sw f"></i>future</span><small>(+K<sub>F</sub> steps)</small></span>
+            </p>
+          </div>
+
+          <div class="stage-panels">
+            <div class="stage-panel" data-phase="1">
+              <p class="obs-quote"><span class="mini o q" data-o="B"><span>o<sub>B</sub></span></span><span class="obs-text">You arrive at countertop 1. On the countertop 1, you see an apple 1.</span></p>
+              <div class="match">
+                <div class="match-group"><span class="match-tiles" data-match="query"></span><small>query</small></div>
+                <span class="ctx-arrow">&rarr;</span>
+                <div class="match-group"><span class="match-tiles" data-match="peers"></span><small>exact peers &#x2130;<sub>i,t</sub></small></div>
+                <div class="match-group"><span class="match-tiles" data-match="excluded"></span><small>excluded</small></div>
+              </div>
+              <div class="eq"><img class="tex" data-eq="peers" src="static/eq/peers.svg" width="165" height="29" style="--w:16.452" alt="\begin{aligned}\mathcal{E}_{i,t}=\{(j,s):\ &amp;x_j=x_i,\ j\neq i,\\ &amp;0\le s&lt;T_j,\ o_{j,s}=o_{i,t}\}\end{aligned}"></div>
+              <p>For a query step, exact peers are steps from other trajectories of the same task that saw the same observation. The query&rsquo;s entire trajectory is excluded.</p>
+              <p>If no exact match exists, CCPO falls back to all same-task steps from other trajectories.</p>
+            </div>
+
+            <div class="stage-panel" data-phase="2" hidden>
+              <div class="ctx">
+                <span class="ctx-win h" data-window="history"></span><span class="ctx-arrow">&rarr;</span>
+                <span class="ctx-llm">LLM<span>&#10052;</span></span>
+                <span class="ctx-arrow">&rarr;</span><span class="ctx-phi">&phi;<sub>t</sub><i class="sw hh"></i><i class="sw hh"></i><i class="sw hh"></i><i class="sw cc"></i></span>
+                <span class="ctx-win f" data-window="future"></span><span class="ctx-arrow">&rarr;</span>
+                <span class="ctx-arrow">&rarr;</span><span class="ctx-phi">&phi;<sub>t+</sub><i class="sw hh"></i><i class="sw hh"></i><i class="sw hh"></i><i class="sw cc"></i></span>
+                <p class="stage-keys ctx-keys">
+                  <span class="keyitem"><i class="sw hh"></i><span><math><mover accent="true"><mi>h</mi><mo>~</mo></mover></math> : LLM hidden state</span></span>
+                  <span class="keyitem"><i class="sw cc"></i><span><i>c</i> : context summary stats</span></span>
+                </p>
+              </div>
+              <div class="eq"><img class="tex" data-eq="weight" src="static/eq/weight.svg" width="175" height="14" style="--w:17.507" alt="\bar w_{(i,t),(j,s)}\ \propto\ \exp\!\big(-\lVert\phi_{i,t}-\phi_{j,s}\rVert_2\,/\,\tau_B\big)"><img class="tex" data-eq="baseline" src="static/eq/baseline.svg" width="133" height="28" style="--w:13.345" alt="\mathcal{B}_{i,t}[r]=\sum_{(j,s)\in\mathcal{P}_{i,t}}\bar w_{(i,t),(j,s)}\,r_{j,s}"></div>
+              <p>Each step&rsquo;s context is a frozen LLM&rsquo;s final-layer hidden state at the last prompt token, concatenated with a trajectory summary: elapsed steps, distinct-observation count, novelty fraction and a revisit indicator.</p>
+              <p>Peers closer to the query in this space contribute more; the bandwidth &tau;<sub>B</sub> scales with the median pairwise context distance in the bucket.</p>
+            </div>
+
+            <div class="stage-panel" data-phase="3" hidden>
+              <div class="creds">
+                <div class="cred h">
+                  <div class="eq"><img class="tex" data-eq="credit-h" src="static/eq/credit-h.svg" width="87" height="15" style="--w:8.651" alt="C^{\mathrm H}_{i,t}=Y_{i,t}-\mathcal{B}_{i,t}[Y]"></div>
+                  <svg viewBox="0 0 220 44" aria-hidden="true"><line x1="6" y1="14" x2="214" y2="14" stroke="#4a5163" stroke-width="1.5"/><circle cx="34" cy="14" r="2.5" fill="none" stroke="#5b9ff0" stroke-width="1.5"/><circle cx="58" cy="14" r="4" fill="none" stroke="#5b9ff0" stroke-width="1.5"/><circle cx="104" cy="14" r="5.5" fill="none" stroke="#5b9ff0" stroke-width="1.5"/><circle cx="128" cy="14" r="3" fill="none" stroke="#5b9ff0" stroke-width="1.5"/><line x1="82" y1="14" x2="176" y2="14" stroke="#a98bf0" stroke-width="3.5"/><line x1="82" y1="5" x2="82" y2="23" stroke="#e8ebf1" stroke-width="2"/><circle cx="176" cy="14" r="5" fill="#f59a55"/><text x="82" y="38" text-anchor="middle">&#8492;[Y]</text><text x="176" y="38" text-anchor="middle">Y</text></svg>
+                </div>
+                <div class="cred f">
+                  <div class="eq"><img class="tex" data-eq="credit-f" src="static/eq/credit-f.svg" width="99" height="15" style="--w:9.900" alt="C^{\mathrm F}_{i,t}=z_{x_i}\big[V_{i,t^+}-V_{i,t}\big]"></div>
+                  <svg viewBox="0 0 220 44" aria-hidden="true"><line x1="22" y1="26" x2="196" y2="26" stroke="#4a5163" stroke-width="1" stroke-dasharray="3 3"/><path d="M22,26 C90,26 110,6 176,6" fill="none" stroke="#4fcf9b" stroke-width="2.5"/><circle cx="22" cy="26" r="4" fill="#0c0f16" stroke="#4fcf9b" stroke-width="2"/><circle cx="176" cy="6" r="4.5" fill="#4fcf9b"/><line x1="176" y1="11" x2="176" y2="26" stroke="#4a5163" stroke-width="1" stroke-dasharray="2 2"/><path d="M196,26 V8 M192,13 L196,7 L200,13" fill="none" stroke="#4fcf9b" stroke-width="2"/><text x="22" y="41" text-anchor="middle">V<tspan dy="3" font-size="7">t</tspan></text><text x="176" y="41" text-anchor="middle">V<tspan dy="3" font-size="7">t+</tspan></text></svg>
+                </div>
+              </div>
+              <div class="eq eq-row"><img class="tex" data-eq="value" src="static/eq/value.svg" width="60" height="14" style="--w:5.957" alt="V_{i,s}=\mathcal{B}_{i,s}[Z]"><img class="tex" data-eq="outcome" src="static/eq/outcome.svg" width="68" height="14" style="--w:6.782" alt="Z_{i,s}=\gamma^{\,T_i-s}R_i"><img class="tex" data-eq="horizon" src="static/eq/horizon.svg" width="95" height="14" style="--w:9.494" alt="t^+=\min(t+K_{\mathrm F},\,T_i)"></div>
+              <p><strong class="c-hist">Historical credit</strong> asks whether this trajectory&rsquo;s return beat what contextually similar peers obtained. <strong class="c-fut">Future credit</strong> asks whether contextual outcome value grew over the next K<sub>F</sub> realized steps, even without intermediate rewards.</p>
+              <p>Future endpoints are used only during training.</p>
+            </div>
+
+            <div class="stage-panel" data-phase="4" hidden>
+              <div class="flow">
+                <div class="flow-row">
+                  <span class="tk h">C<sup>H</sup></span><span class="op">+</span><span class="tk f">C<sup>F</sup></span><span class="op">&rarr;</span>
+                  <span class="tk n">&#x1D4A9;</span><span class="op">&rarr;</span><span class="tk a">A<sup>CC</sup></span>
+                </div>
+              </div>
+              <div class="eq"><img class="tex" data-eq="advantage" src="static/eq/advantage.svg" width="111" height="16" style="--w:11.114" alt="A^{\mathrm{CC}}_{i,t}=\mathcal{N}_{x_i}\big[\,C^{\mathrm H}+C^{\mathrm F}\,\big]_{i,t}"><img class="tex" data-eq="advantage-sum" src="static/eq/advantage-sum.svg" width="79" height="15" style="--w:7.913" alt="A^{\mathrm{CC}}_{i,t}=A^{\mathrm H}_{i,t}+A^{\mathrm F}_{i,t}"></div>
+              <p>The two signals are added with unit coefficients and normalized within each task. The advantage weights the step&rsquo;s response tokens in a dual-clipped PPO objective with a KL penalty toward the frozen reference policy.</p>
+              <p>An episode-augmented variant adds a GRPO-style episode advantage, A<sub>CC</sub>&nbsp;+&nbsp;A<sub>EP</sub>.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <button class="figure-frame" id="method-figure" hidden data-zoom="static/figures/pipeline.svg" data-caption="Contextual credit policy optimization of multi-step tasks (Figure 2).">
+          <img src="static/figures/pipeline.svg" alt="CCPO pipeline: group rollout and peer matching, context representation from a frozen LLM and trajectory statistics, weighted group baseline, dual contextual credit, and the PPO update.">
+        </button>
+      </div>
+        <figcaption><b>Contextual credit policy optimization of multi-step tasks.</b> Contextual similarity weights observation-matched peers. A history-conditioned return residual and estimated outcome-value change over a short future window yield step-level credit from collected rollouts, without an auxiliary value critic.</figcaption>
+      </figure>
+
+      <dl class="spec reveal">
+        <div><dt>Context &phi;</dt><dd><b>Frozen LLM hidden state + trajectory summary</b>, each L2-normalized and concatenated with equal weights.</dd></div>
+        <div><dt>Windows</dt><dd><span class="mks" aria-hidden="true"><i class="mk mk-h"></i><i class="mk mk-h"></i><i class="mk mk-a"></i><i class="mk mk-f"></i><i class="mk mk-f"></i></span>&ensp;<b>K<sub>H</sub> = 2</b> history steps, <b>K<sub>F</sub> = 2</b> future steps.</dd></div>
+        <div><dt>Training</dt><dd><b>150 iterations</b>, 16 tasks &times; 8 trajectories, learning rate 10<sup>&minus;6</sup>, &gamma; = 0.95.</dd></div>
+        <div><dt>Overhead</dt><dd><b>No value critic</b> to train and <b>no extra rollouts</b>; built on verl-agent.</dd></div>
+      </dl>
+    </div>
+  </section>
+
+  <!-- ============================= RESULTS ============================ -->
+  <section class="section" id="results">
+    <div class="wrap">
+      <header class="section-head reveal">
+        <h2>Results</h2>
+        <p class="lede">CCPO is compared with off-the-shelf LLMs, prompt-based agents and RL training methods using Qwen2.5-1.5B-Instruct and Qwen2.5-7B-Instruct backbones. It leads the listed RL baselines in mean success on both benchmarks.</p>
+      </header>
+
+      <div class="card viz reveal" id="results-viz">
+        <div class="viz-head">
+          <div>
+            <h3 class="viz-title" id="results-title">Success by method</h3>
+            <p class="viz-sub">Mean over three seeds. Whiskers show &plusmn;1 standard deviation where reported.</p>
+          </div>
+          <div class="controls">
+            <div class="control"><span>Backbone</span><div class="seg" data-control="backbone"></div></div>
+            <div class="control"><span>Metric</span><div class="seg" data-control="metric"></div></div>
+          </div>
+        </div>
+        <div class="bars" role="img" aria-labelledby="results-title"></div>
+        <div class="delta" aria-live="polite"></div>
+      </div>
+
+      <details class="table-details reveal">
+        <summary>Full results table <small>every sub-task, both backbones, with numbers reported in the original papers</small></summary>
+        <div class="table-scroll">
+          <div id="results-table"></div>
+          <p class="table-note">Success rate (%) per ALFWorld sub-task and overall; success rate (%) and score for WebShop. Means over three seeds with standard deviations. Within each section the best mean is shaded and the second best underlined. <sup>*</sup>&nbsp;Baselines reproduced, or off-the-shelf models evaluated, by the authors. Gray rows are results from the original papers and are excluded from ranking. &Delta;&nbsp;GRPO is the min&ndash;max gain over GRPO across both CCPO variants.</p>
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <!-- ============================ ABLATIONS =========================== -->
+  <section class="section is-white" id="ablations">
+    <div class="wrap">
+      <header class="section-head reveal">
+        <h2>Ablations</h2>
+        <p class="lede">All ablations use Qwen2.5-1.5B-Instruct, with A<sub>CC</sub> on ALFWorld and A<sub>CC</sub>&nbsp;+&nbsp;A<sub>EP</sub> on WebShop as reference configurations. Excluding the query&rsquo;s own trajectory, contextual weighting, and both credit channels each contribute.</p>
+      </header>
+
+      <div class="card viz reveal" id="ablation-viz">
+        <div class="viz-head">
+          <div>
+            <h3 class="viz-title">Success lost when one component changes</h3>
+            <p class="viz-sub">Percentage points below full CCPO. Mean success of each ablation is shown at the right of its bar.</p>
+          </div>
+        </div>
+        <div class="abl-grid"></div>
+      </div>
+
+      <div class="windows">
+        <div class="card viz reveal">
+          <div class="viz-head">
+            <div>
+              <h3 class="viz-title">Where should the window sit?</h3>
+              <p class="viz-sub">ALFWorld success as a five-step window shifts from all history to all future.</p>
+            </div>
+          </div>
+          <div class="chart-host" id="window-shift"></div>
+        </div>
+        <div class="card viz reveal">
+          <div class="viz-head">
+            <div>
+              <h3 class="viz-title">How wide should it be?</h3>
+              <p class="viz-sub">Symmetric windows of one, two and three steps each way.</p>
+            </div>
+          </div>
+          <div class="chart-host" id="window-width"></div>
+        </div>
+      </div>
+      <p class="caption reveal">
+        Markers follow the paper:
+        <span class="mks"><i class="mk mk-h"></i></span> history step,
+        <span class="mks"><i class="mk mk-a"></i></span> current step,
+        <span class="mks"><i class="mk mk-f"></i></span> future step.
+        The default two steps each way outperforms every tested asymmetric window, and widening to three reduces success from 96.9% to 91.4%. Window variations are restricted to ALFWorld, where successful 1.5B trajectories average 8.7 steps versus 5.1 on WebShop. Error bars: &plusmn;1 SD over three seeds.
+      </p>
+
+      <details class="table-details reveal">
+        <summary>Full ablation table <small>all ALFWorld sub-tasks and WebShop score</small></summary>
+        <div class="table-scroll">
+          <div id="ablation-table"></div>
+          <p class="table-note">H and F denote active historical and future credit spans, with W&nbsp;=&nbsp;H&nbsp;+&nbsp;F&nbsp;+&nbsp;1. Zero marks a disabled credit channel. Channel-only rows retain K<sub>H</sub>&nbsp;=&nbsp;K<sub>F</sub>&nbsp;=&nbsp;2; temporal-window rows also change the actual window lengths. A dash means the configuration was not run on WebShop.</p>
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <!-- ============================ ANALYSIS ============================ -->
+  <section class="section" id="analysis">
+    <div class="wrap">
+      <header class="section-head reveal">
+        <h2>Contextual credit analysis</h2>
+        <p class="lede">Evaluation trajectories, credit magnitudes over training, and credit preferences by action category, all on ALFWorld.</p>
+      </header>
+
+      <div class="finding-tabs reveal" role="tablist" aria-label="Analyses">
+        <button class="finding-tab" type="button" role="tab" id="finding-tab-1" aria-controls="finding-1" data-finding="1"><b>01</b><span>Revisit behavior</span></button>
+        <button class="finding-tab" type="button" role="tab" id="finding-tab-2" aria-controls="finding-2" data-finding="2"><b>02</b><span>Credit dynamics</span></button>
+        <button class="finding-tab" type="button" role="tab" id="finding-tab-3" aria-controls="finding-3" data-finding="3"><b>03</b><span>History and future credit</span></button>
+        <button class="finding-tab" type="button" role="tab" id="finding-tab-4" aria-controls="finding-4" data-finding="4"><b>04</b><span>Credit preferences</span></button>
+        <button class="finding-tab" type="button" role="tab" id="finding-tab-5" aria-controls="finding-5" data-finding="5"><b>05</b><span>Context representation</span></button>
+      </div>
+
+      <div class="findings">
+
+        <!-- Finding 1 -->
+        <article class="card finding reveal" id="finding-1" role="tabpanel" aria-labelledby="finding-tab-1">
+          <div class="finding-head is-single">
+            <div class="finding-text">
+              <h3>Identical observations can conceal different task progress.</h3>
+              <p>On this ALFWorld evaluation task, GiGPO, HGPO and G2PO keep navigating among places they have already visited and never acquire the target. CCPO reaches the same empty hanger only after picking the toilet paper up, and completes the task in 7 steps.</p>
+            </div>
+            <div class="keys">
+              <div class="key">
+                <div class="key-value">22.5%<small>&plusmn;1.8</small></div>
+                <p>CCPO&rsquo;s repeated-observation rate on ALFWorld evaluation rollouts, versus 26.8&ndash;41.0% for the baselines.</p>
+              </div>
+            </div>
+          </div>
+          <div class="finding-body">
+            <div class="viz" id="replay">
+              <div class="replay-bar">
+                <div class="seg" data-control="game"></div>
+                <div class="task-chip"><span>Task</span><b class="task-text"></b></div>
+                <button class="play" type="button"><svg viewBox="0 0 12 12" fill="currentColor" aria-hidden="true"><path d="M2.5 1.2v9.6a.5.5 0 0 0 .76.43l7.7-4.8a.5.5 0 0 0 0-.86l-7.7-4.8a.5.5 0 0 0-.76.43Z"/></svg><span>Replay</span></button>
+                <label class="scrub"><span class="visually-hidden">Step</span><input type="range" min="0" max="50" value="50" step="1"><output>step 50</output></label>
+              </div>
+              <div class="replay-scroll"><div class="replay"></div></div>
+              <div class="legend replay-legend"></div>
+              <div class="twin-note"></div>
+              <p class="viz-foot">One sampled evaluation trajectory per method at training step 150, temperature 0.4, 50-step limit. Each cell is one step; a revisit is navigation to a previously visited location. CCPO uses A<sub>CC</sub> only. <button class="linkish" data-zoom-current="replay">View the paper&rsquo;s figure</button></p>
+            </div>
+            <div class="viz">
+              <div class="viz-head">
+                <div>
+                  <h4 class="viz-title">Repeated-observation rate on ALFWorld evaluation rollouts</h4>
+                  <p class="viz-sub">Share of steps whose observation was already seen in the same rollout. Mean &plusmn; SD over three evaluation draws; lower means less revisiting.</p>
+                </div>
+              </div>
+              <div class="mini-bars" id="revisit-bars"></div>
+            </div>
+          </div>
+        </article>
+
+        <!-- Finding 2 -->
+        <article class="card finding reveal" id="finding-2" role="tabpanel" aria-labelledby="finding-tab-2">
+          <div class="finding-head is-solo">
+            <div class="finding-text">
+              <h3>Contextual credit keeps a learning signal as the episode-level one fades.</h3>
+              <p>Both advantages are computed from the same A<sub>CC</sub>-only ALFWorld rollouts; A<sub>EP</sub> is logged for comparison and never backpropagated. As validation success improves, the mean absolute episode advantage diminishes while the contextual advantage remains elevated.</p>
+            </div>
+          </div>
+          <div class="finding-body">
+            <div class="viz" id="dyn-compare">
+              <div class="viz-head">
+                <div class="legend"></div>
+                <label class="check"><input type="checkbox" data-raw> Show raw per-iteration traces</label>
+              </div>
+              <div class="panels"></div>
+              <p class="viz-foot">Mean absolute credit per training iteration on ALFWorld. Curves are centered 5-iteration means; bands are 95% trajectory-bootstrap confidence intervals. The strip below each panel traces validation success over the same iterations. <button class="linkish" data-zoom="static/figures/credit-dynamics.svg" data-caption="Contextual credit dynamics on ALFWorld, Qwen2.5-1.5B and 7B (Figure 4).">View the paper&rsquo;s figure</button></p>
+            </div>
+          </div>
+        </article>
+
+        <!-- Finding 3 -->
+        <article class="card finding reveal" id="finding-3" role="tabpanel" aria-labelledby="finding-tab-3">
+          <div class="finding-head">
+            <div class="finding-text">
+              <h3>The balance shifts from history toward future progress.</h3>
+              <p><strong class="c-hist">Historical credit</strong> dominates early. <strong class="c-fut">Future credit</strong> becomes more prominent later, even though the two are always combined with fixed unit weights. Within 10-iteration windows their magnitudes become less consistently correlated late in training, especially at 7B. The two components evolve differently, supporting complementary roles.</p>
+            </div>
+            <div class="keys two">
+              <div class="key">
+                <div class="key-value num">0.25<span class="arrow">&rarr;</span>0.60</div>
+                <p>Future-to-history magnitude ratio at <b>1.5B</b>, iterations 1&ndash;30 vs 121&ndash;150.</p>
+              </div>
+              <div class="key">
+                <div class="key-value num">0.32<span class="arrow">&rarr;</span>1.01</div>
+                <p>The same ratio at <b>7B</b>: by the end, future credit is as large as historical credit.</p>
+              </div>
+            </div>
+          </div>
+          <div class="finding-body">
+            <div class="viz" id="dyn-decomp">
+              <div class="viz-head">
+                <div class="legend"></div>
+                <label class="check"><input type="checkbox" data-raw> Show raw per-iteration traces</label>
+              </div>
+              <div class="panels"></div>
+              <p class="viz-foot">Shaded spans mark iterations 1&ndash;30 and 121&ndash;150, over which the ratio E|A<sup>F</sup>| / E|A<sup>H</sup>| is computed. The contributions satisfy A<sub>CC</sub> = A<sup>H</sup> + A<sup>F</sup>.</p>
+            </div>
+            <div class="viz">
+              <div class="viz-head">
+                <div>
+                  <h4 class="viz-title">Do the two magnitudes move together?</h4>
+                  <p class="viz-sub">Pearson r between unsmoothed |A<sup>H</sup>| and |A<sup>F</sup>| in non-overlapping 10-iteration windows.</p>
+                </div>
+                <div class="corr-scale"><span>&minus;1</span><i></i><span>+1</span></div>
+              </div>
+              <div class="corr"><div class="corr-grid" id="corr-grid"></div></div>
+            </div>
+          </div>
+        </article>
+
+        <!-- Finding 4 -->
+        <article class="card finding reveal" id="finding-4" role="tabpanel" aria-labelledby="finding-tab-4">
+          <div class="finding-head is-single">
+            <div class="finding-text">
+              <h3>Future credit favors reaching new places more than historical credit does.</h3>
+              <p>Within groups matched on task, observation and iteration, both channels favor task operations (cleaning, heating, cooling). They differ on exploration: relative to other actions, <strong class="c-fut">A<sup>F</sup></strong> favors new-location transitions more than <strong class="c-hist">A<sup>H</sup></strong>. Variants without the context summary, and with (4,&nbsp;0) or (0,&nbsp;4) windows, show similar patterns.</p>
+            </div>
+            <div class="keys">
+              <div class="key">
+                <div class="key-value num">+0.037</div>
+                <p>Paired difference A<sup>F</sup> &minus; A<sup>H</sup> for new-location transitions in full CCPO. Bonferroni-adjusted CI [0.001, 0.073] over 2,804 groups.</p>
+              </div>
+            </div>
+          </div>
+          <div class="finding-body">
+            <div class="viz" id="prefs">
+              <div class="cp-scroll"><div class="cp"></div></div>
+              <p class="legend cp-legend">
+                <span>Relative credit preference</span>
+                <span><i class="sq" style="--c:rgba(46, 158, 107, 0.5)"></i>Positive (+)</span>
+                <span><i class="sq" style="--c:rgba(209, 75, 61, 0.5)"></i>Negative (&minus;)</span>
+                <span>&mdash; Insufficient matched groups (&lt;60)</span>
+                <span><b>*</b> Significant</span>
+                <span><b>off</b> Inactive component</span>
+              </p>
+              <div class="paired"></div>
+              <p class="viz-foot">Mean category-relative credit within matched task&ndash;observation groups and iterations, from successful Qwen2.5-1.5B ALFWorld rollouts at iterations 101&ndash;150. Brackets give Bonferroni-adjusted confidence intervals; asterisks mark intervals excluding zero. Context markers denote <span class="mks"><i class="mk mk-a"></i></span> current, <span class="mks"><i class="mk mk-h"></i></span> history and <span class="mks"><i class="mk mk-f"></i></span> future. <button class="linkish" data-zoom="static/figures/credit-preferences.svg" data-caption="Credit preferences on ALFWorld, Qwen2.5-1.5B-Instruct (Figure 5).">View the paper&rsquo;s figure</button></p>
+            </div>
+          </div>
+        </article>
+
+        <!-- Finding 5 -->
+        <article class="card finding reveal" id="finding-5" role="tabpanel" aria-labelledby="finding-tab-5">
+          <div class="finding-head">
+            <div class="finding-text">
+              <h3>Changing the context representation changes when the agent acts.</h3>
+              <p>Each ablated policy is paired with full CCPO on the same 140 evaluation games, comparing the step at which an action type first occurs. For opening a container, a future-only window acts earlier than full CCPO in 72.1% of paired games, while a history-only window acts later in 54.3%.</p>
+            </div>
+            <div class="keys two">
+              <div class="key">
+                <div class="key-value num">72.1%</div>
+                <p><b>Future-only window:</b> first <em>open</em> comes earlier than under full CCPO.</p>
+              </div>
+              <div class="key">
+                <div class="key-value num">54.3%</div>
+                <p><b>History-only window:</b> first <em>open</em> comes later.</p>
+              </div>
+            </div>
+          </div>
+          <div class="finding-body">
+            <div class="viz" id="timing">
+              <div class="viz-head">
+                <div>
+                  <h4 class="viz-title">First occurrence of each action, relative to full CCPO</h4>
+                  <p class="viz-sub">Share of paired games (%) in which the ablated policy acts earlier, at the same step, or later.</p>
+                </div>
+                <div class="legend"></div>
+              </div>
+              <div class="timing"></div>
+              <p class="viz-foot">Checkpoint 150, Qwen2.5-1.5B-Instruct, successful and failed episodes. Percentages condition on both policies performing the action; these are descriptive proportions. Categories with fewer than 12 pairs, and those not compatible with a first-occurrence analysis, are omitted. <button class="linkish" data-zoom="static/figures/action-timing.svg" data-caption="Action timing on ALFWorld, Qwen2.5-1.5B-Instruct (Figure S1).">View the paper&rsquo;s figure</button></p>
+            </div>
+            <div class="viz viz-split">
+              <div>
+                <h4 class="viz-title">Absolute changes in matched peer weights from context summaries</h4>
+                <p class="viz-sub">Context summaries add accumulated trajectory statistics to the semantic representation: step count, distinct-observation count, novelty fraction and a revisit indicator. Adding them changes normalized peer weights by more than one percentage point for 33.8% of matched query&ndash;peer pairs. Removing them lowers mean success by 2.6 points on ALFWorld and 1.3 on WebShop.</p>
+              </div>
+              <div class="mini-table">
+                <table class="data is-compact">
+                <thead><tr><th>Change (pp)</th><th>&gt; 0.25</th><th>&gt; 0.5</th><th>&gt; 1</th><th>&gt; 5</th><th>&gt; 10</th></tr></thead>
+                <tbody><tr><td>Pairs (%)</td><td>62.1</td><td>48.7</td><td>33.8</td><td>8.6</td><td>3.6</td></tr></tbody>
+              </table>
+              </div>
+            </div>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====================== LIMITATIONS / FUTURE ====================== -->
+  <section class="section is-white" id="limitations">
+    <div class="wrap duo">
+      <div class="reveal">
+        <h3>Limitations</h3>
+        <ul class="plain-list">
+          <li><b>Evaluation breadth.</b>Two multi-step benchmarks and one model family. Broader generalization, and applicability to short-horizon or single-step tasks, remain untested.</li>
+          <li><b>Matching and hand-designed context.</b>Exact observation matching can limit peer availability, while fixed temporal windows and hand-designed trajectory statistics may require adaptation across environments.</li>
+          <li><b>Sparse rewards.</b>Future credit vanishes when all rollouts in a task group receive zero terminal reward, which limits the future channel early in training when successful trajectories are scarce.</li>
+        </ul>
+      </div>
+      <div class="reveal">
+        <h3>Future work</h3>
+        <ul class="plain-list">
+          <li><b>Adaptive horizons and stage-dependent weighting.</b>Motivated by the changing balance between historical and future credit over training.</li>
+          <li><b>Streaming and multimodal credit.</b>Credit estimation from incomplete rollouts, and contexts that combine visual observations with textual histories.</li>
+          <li><b>Beyond exact matching.</b>Semantic peer retrieval, and uncertainty estimates for correlated visits.</li>
+          <li><b>Broader evaluation.</b>Generalization across model families and domains, computational scaling, and the effects of realized-future conditioning on policy updates.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================ CITATION ============================ -->
+  <section class="cite on-night" id="cite">
+    <div class="wrap cite-grid">
+      <div>
+        <h2>Citation</h2>
+        <p>If contextual credit is useful in your work, please cite the paper.</p>
+        <div class="hero-cta">
+          <a class="btn btn-light" href="static/paper/ccpo.pdf">Read the paper</a>
+          <a class="btn btn-ghost" href="https://github.com/phai-lab/CCPO">Code</a>
+        </div>
+      </div>
+      <div class="bibtex">
+        <div class="bibtex-bar"><span>BIBTEX</span><button class="copy" type="button" data-copy="#bibtex">Copy citation</button></div>
+<pre id="bibtex">@article{han2026ccpo,
+  title  = {Contextual Credit Policy Optimization},
+  author = {Han, Huiwen and Zeng, Ziyao and Zhu, Zihao and
+            Bei, Sisong and Wang, Hao and Xu, Hongyu and
+            Han, Yan and Zhi, Degui and Fan, Zhiwen},
+  year   = {2026}
+}</pre>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="wrap footer-grid">
+    <div class="footer-about">
+      <a class="brand" href="#top" aria-label="CCPO, back to top">
+        <span class="mks" aria-hidden="true"><i class="mk mk-h"></i><i class="mk mk-h"></i><i class="mk mk-a"></i><i class="mk mk-f"></i><i class="mk mk-f"></i></span>
+        CCPO
+      </a>
+      <p>Contextual credit policy optimization for long-horizon agents.</p>
+    </div>
+    <nav class="footer-links" aria-label="Footer">
+      <a href="static/paper/ccpo.pdf">Paper</a>
+      <a href="https://github.com/phai-lab/CCPO">Code</a>
+      <a href="#cite">BibTeX</a>
+    </nav>
+    <div class="footer-logos">
+      <img src="static/img/phai-logo.png" alt="PHAI Lab" width="668" height="626">
+      <img class="is-wordmark" src="static/img/tamu-logo.svg" alt="Texas A&amp;M University" width="183" height="28">
+    </div>
+  </div>
+</footer>
+
+<noscript><p style="margin:0;padding:14px 20px;background:#fdeedf;font:15px/1.5 system-ui,sans-serif;text-align:center">The interactive figures on this page need JavaScript. Every figure and table is also in <a href="static/paper/ccpo.pdf">the paper</a>.</p></noscript>
+
+<div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="Figure">
+  <button class="lightbox-close" type="button" aria-label="Close">&times;</button>
+  <figure><img alt=""><figcaption></figcaption></figure>
+</div>
+<div class="tip" id="tip" role="tooltip"></div>
+
+<script defer src="static/js/data.js"></script>
+<script defer src="static/js/figure-data.js"></script>
+<script defer src="static/js/viz.js"></script>
+<script defer src="static/js/site.js"></script>
+</body>
+</html>
