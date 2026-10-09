@@ -477,8 +477,8 @@ sup, sub { line-height: 0; }
 .ctx-keys { grid-column: 1 / -1; font-size: 13px; gap: 6px 22px; }
 
 .ctx { display: grid; grid-template-columns: minmax(0, 176px) auto auto auto auto; justify-content: space-between; gap: 12px 8px; align-items: center; }
-.ctx-win { display: flex; gap: 6px; padding-top: 6px; border-top: 3px solid; grid-column: 1; }
-.mini-step { display: flex; gap: 1px; flex: 2 1 0; min-width: 0; }
+.ctx-win { display: flex; align-items: flex-start; gap: 6px; padding-top: 6px; border-top: 3px solid; grid-column: 1; }
+.mini-step { display: flex; align-items: flex-start; gap: 1px; flex: 2 1 0; min-width: 0; }
 .mini-step:last-child { flex: 1 1 0; }
 .mini-step .mini.o:not(:only-child) { border-radius: 7px 0 0 7px; }
 .mini-step .mini.a { border-radius: 0 7px 7px 0; }
@@ -505,8 +505,10 @@ sup, sub { line-height: 0; }
 .match-group { display: grid; justify-items: center; gap: 7px; }
 .match-group small { font-size: 12.5px; line-height: 1.2; color: var(--night-mute); white-space: nowrap; }
 .match-group small sub { font-size: 0.74em; }
-.match-tiles { display: flex; gap: 5px; }
-.match-tiles .mini { flex: 0 0 var(--mt); }
+/* Tiles get an explicit width: Safari sizes a flex row from its items' content, not their flex-basis,
+   which made each group narrower than its tiles and let the peers spill over the excluded tile. */
+.match-tiles { display: grid; grid-auto-flow: column; grid-auto-columns: var(--mt); gap: 5px; }
+.match-tiles .mini { width: var(--mt); height: var(--mt); min-width: 0; }
 .ctx-arrow { text-align: center; font-size: 15px; color: #6f778a; }
 .ctx-llm { grid-column: 3; grid-row: 1 / span 2; align-self: stretch; display: grid; place-content: center; justify-items: center; gap: 2px; padding: 0 16px; border-radius: 11px; background: rgba(233, 196, 106, 0.13); border: 1px solid rgba(233, 196, 106, 0.42); font-size: 14px; font-weight: 600; color: #f1dca0; }
 .ctx-llm span { font-size: 26px; line-height: 1; font-weight: 400; color: #8fd0f5; }

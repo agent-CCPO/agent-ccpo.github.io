@@ -296,6 +296,7 @@
       root.style.setProperty('--k', wide.matches && w ? Math.min(1, w / 1158).toFixed(4) : '1');
     };
     if ('ResizeObserver' in window) new ResizeObserver(fit).observe(root);
+    addEventListener('resize', fit);
     fit();
     wide.addEventListener('change', schedule);
 
