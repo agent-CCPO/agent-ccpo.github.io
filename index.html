@@ -135,7 +135,7 @@
       <header class="section-head has-aside reveal">
         <h2>Method</h2>
         <div class="seg" data-control="method-view" aria-label="Method view"></div>
-        <p class="lede">CCPO extends critic-free group estimation to individual steps. It weights observation-matched peers by contextual similarity, and uses the same weighted readout for return baselines and for outcome values.</p>
+        <p class="lede">CCPO credits each step of a rollout without a value critic. It finds the steps in other rollouts of the same task that saw the same observation, and weights these peers by how similar their context is. The weighted peers answer two questions: did this trajectory&rsquo;s return beat theirs (historical credit), and did the expected outcome rise over the next few steps (future credit)? Their sum is the step&rsquo;s advantage.</p>
       </header>
 
       <!-- Animated walkthrough of the method; the rollout rows are built in viz.js -->
@@ -243,7 +243,7 @@
     <div class="wrap">
       <header class="section-head reveal">
         <h2>Results</h2>
-        <p class="lede">CCPO is compared with off-the-shelf LLMs, prompt-based agents and RL training methods using Qwen2.5-1.5B-Instruct and Qwen2.5-7B-Instruct backbones. It leads the listed RL baselines in mean success on both benchmarks.</p>
+        <p class="lede">CCPO is evaluated on two multi-step benchmarks, ALFWorld (text-based household tasks) and WebShop (web shopping), with Qwen2.5-1.5B-Instruct and Qwen2.5-7B-Instruct. It is compared with off-the-shelf LLMs, prompt-based agents and RL training methods. At both model sizes, a CCPO variant has the highest mean success rate among the RL methods on ALFWorld and on WebShop.</p>
       </header>
 
       <div class="card viz reveal" id="results-viz">
