@@ -14,7 +14,13 @@
       entries.forEach((e) => {
         if (!e.isIntersecting) return;
         links.forEach((a) => a.classList.remove('is-active'));
-        byId.get(e.target.id).classList.add('is-active');
+        const link = byId.get(e.target.id);
+        link.classList.add('is-active');
+        // On small screens the links are a strip that scrolls sideways: keep the current one in view.
+        const strip = link.parentElement;
+        if (strip.scrollWidth > strip.clientWidth) {
+          strip.scrollTo({ left: link.offsetLeft - (strip.clientWidth - link.offsetWidth) / 2, behavior: 'smooth' });
+        }
       });
     }, { rootMargin: '-45% 0px -50% 0px' });
     sections.forEach((s) => io.observe(s));
@@ -70,6 +76,10 @@
         tab.setAttribute('aria-selected', String(on));
         tab.tabIndex = on ? 0 : -1;
         $('#finding-' + tab.dataset.finding).hidden = !on;
+        const strip = tab.parentElement;
+        if (on && strip.scrollWidth > strip.clientWidth) {
+          strip.scrollTo({ left: tab.offsetLeft - (strip.clientWidth - tab.offsetWidth) / 2, behavior: 'smooth' });
+        }
       });
     };
     const fromHash = () => {

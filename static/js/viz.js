@@ -245,6 +245,7 @@
     $('[data-match="peers"]', root).innerHTML = groupTile('p').repeat(Object.keys(weight).length);
     $('[data-match="excluded"]', root).innerHTML = groupTile('x');
 
+    const wide = window.matchMedia('(min-width: 1021px)');
     const tabs = [...root.querySelectorAll('.stage-tab')];
     const panels = [...root.querySelectorAll('.stage-panel')];
     const MS = 7000;
@@ -264,11 +265,13 @@
       });
       panels.forEach((panel) => { panel.hidden = Number(panel.dataset.phase) !== p; });
     }
-    // Steps advance on their own until the reader points at the walkthrough.
+    // Steps advance on their own until the reader points at the walkthrough. On
+    // the stacked layout each step has its own height, so advancing would move
+    // the page under the reader; there the steps change only when tapped.
     function schedule() {
       clearTimeout(timer);
       root.classList.remove('is-auto');
-      if (reduceMotion || !visible || hovered) return;
+      if (reduceMotion || !visible || hovered || !wide.matches) return;
       void root.offsetWidth;
       root.classList.add('is-auto');
       timer = setTimeout(() => { set(phase % 4 + 1); schedule(); }, MS);
@@ -288,13 +291,13 @@
 
     // The card is drawn for a 1160px-wide frame and scaled with it, so it keeps
     // the proportions of the paper figure it shares the frame with.
-    const wide = window.matchMedia('(min-width: 1021px)');
     const fit = () => {
       const w = root.clientWidth;
       root.style.setProperty('--k', wide.matches && w ? Math.min(1, w / 1158).toFixed(4) : '1');
     };
     if ('ResizeObserver' in window) new ResizeObserver(fit).observe(root);
     fit();
+    wide.addEventListener('change', schedule);
 
     // The same section can show the paper's own pipeline figure instead.
     const figure = $('#method-figure');
@@ -880,6 +883,14 @@
       return v >= 0 ? `rgba(46, 158, 107, ${a})` : `rgba(209, 75, 61, ${a})`;
     };
     const host = $('.cp', root);
+    host.dataset.show = 'ACC';
+    const pick = el('div', { class: 'seg cp-pick', 'aria-label': 'Credit signal' });
+    host.parentElement.before(pick);
+    seg(pick, [
+      { value: 'AH', label: 'Historical A<sup>H</sup>' },
+      { value: 'AF', label: 'Future A<sup>F</sup>' },
+      { value: 'ACC', label: 'Combined A<sub>CC</sub>' },
+    ], 'ACC', (v) => { host.dataset.show = v; });
     SIGNALS.forEach(([key, name]) => {
       let html = `<thead><tr><th class="cp-label"></th><th colspan="4" class="cp-signal">${name}</th></tr>` +
         `<tr><th class="cp-label"></th>${RUNS.map((r) => `<th>${r[1]}${r[2]}</th>`).join('')}</tr></thead><tbody>`;
@@ -893,7 +904,7 @@
         });
         html += '</tr>';
       });
-      const table = el('table', { class: 'cp-table', html: html + '</tbody>' });
+      const table = el('table', { class: 'cp-table', 'data-signal': key, html: html + '</tbody>' });
       table.querySelectorAll('td[data-run]').forEach((td) => {
         const g = data.runs[td.dataset.run][key][Number(td.dataset.i)];
         const run = RUNS.find((r) => r[0] === td.dataset.run)[1].replace(/<[^>]+>/g, '');
