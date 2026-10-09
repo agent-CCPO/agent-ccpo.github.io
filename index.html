@@ -18,7 +18,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="static/css/site.css?v=20261009d">
+  <link rel="stylesheet" href="static/css/site.css?v=20261009e">
 </head>
 <body>
 
@@ -164,10 +164,10 @@
             <div class="stage-panel" data-phase="1">
               <p class="obs-quote"><span class="mini o q" data-o="B"><span>o<sub>B</sub></span></span><span class="obs-text">You arrive at countertop 1. On the countertop 1, you see an apple 1.</span></p>
               <div class="match">
-                <div class="match-group"><span class="match-tiles" data-match="query"></span><small>query</small></div>
                 <span class="ctx-arrow">&rarr;</span>
-                <div class="match-group"><span class="match-tiles" data-match="peers"></span><small>exact peers &#x2130;<sub>i,t</sub></small></div>
-                <div class="match-group"><span class="match-tiles" data-match="excluded"></span><small>excluded</small></div>
+                <small data-label="query">query</small>
+                <small data-label="peers">exact peers &#x2130;<sub>i,t</sub></small>
+                <small data-label="excluded">excluded</small>
               </div>
               <div class="eq"><img class="tex" data-eq="peers" src="static/eq/peers.svg" width="165" height="29" style="--w:16.452" alt="\begin{aligned}\mathcal{E}_{i,t}=\{(j,s):\ &amp;x_j=x_i,\ j\neq i,\\ &amp;0\le s&lt;T_j,\ o_{j,s}=o_{i,t}\}\end{aligned}"></div>
               <p>For a query step, exact peers are steps from other trajectories of the same task that saw the same observation. The query&rsquo;s entire trajectory is excluded.</p>
@@ -600,9 +600,9 @@
 </div>
 <div class="tip" id="tip" role="tooltip"></div>
 
-<script defer src="static/js/data.js?v=20261009d"></script>
-<script defer src="static/js/figure-data.js?v=20261009d"></script>
-<script defer src="static/js/viz.js?v=20261009d"></script>
-<script defer src="static/js/site.js?v=20261009d"></script>
+<script defer src="static/js/data.js?v=20261009e"></script>
+<script defer src="static/js/figure-data.js?v=20261009e"></script>
+<script defer src="static/js/viz.js?v=20261009e"></script>
+<script defer src="static/js/site.js?v=20261009e"></script>
 </body>
 </html>

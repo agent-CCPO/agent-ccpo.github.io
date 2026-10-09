@@ -240,10 +240,18 @@
     $('[data-window="future"]', root).innerHTML = windowTiles(query.t, query.t + K);
 
     // The matched group shown beside step 01: the query, its exact peers, the excluded step.
-    const groupTile = (cls) => `<span class="mini o ${cls}" data-o="${queryObs}"><span>o<sub>${queryObs}</sub></span></span>`;
-    $('[data-match="query"]', root).innerHTML = groupTile('q');
-    $('[data-match="peers"]', root).innerHTML = groupTile('p').repeat(Object.keys(weight).length);
-    $('[data-match="excluded"]', root).innerHTML = groupTile('x');
+    // One grid row: query | arrow | peers | space | excluded. Every tile sits in its own
+    // column, so its size comes from the column and never from measuring its content.
+    const match = $('.match', root);
+    const nPeers = Object.keys(weight).length;
+    const place = (node, column) => { node.style.gridColumn = column; return node; };
+    const groupTile = (cls, column) => place(el('span', { class: `mini o ${cls}`, 'data-o': queryObs, html: `<span>o<sub>${queryObs}</sub></span>` }), String(column));
+    match.style.gridTemplateColumns = `minmax(0, 38px) minmax(20px, 1fr) repeat(${nPeers}, minmax(0, 38px)) minmax(8px, 1fr) minmax(0, 38px)`;
+    match.prepend(groupTile('q', 1), ...Array.from({ length: nPeers }, (_, i) => groupTile('p', 3 + i)), groupTile('x', nPeers + 4));
+    place($('.ctx-arrow', match), '2');
+    place($('[data-label="query"]', match), '1');
+    place($('[data-label="peers"]', match), `3 / span ${nPeers}`);
+    place($('[data-label="excluded"]', match), String(nPeers + 4));
 
     const wide = window.matchMedia('(min-width: 1021px)');
     const tabs = [...root.querySelectorAll('.stage-tab')];
