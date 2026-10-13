@@ -85,7 +85,7 @@ window.CCPO_DATA = (() => {
     abl('full', 'CCPO (ours)', 'ours', 2, 2, [96.9, 100.0, 75.2, 100.0, 93.1, 100.0, 97.0, 75.0, 85.4], [0.8, 0.0, 4.5, 0.0, 0.7, 0.0, 2.6, 0.8, 1.6]),
   ];
 
-  // Table 4. Repeated-observation rate on ALFWorld evaluation rollouts (%).
+  // Table 4. Revisit rates on ALFWorld evaluation rollouts (%).
   const revisitRate = [
     { method: 'GiGPO', v: 41.0, sd: 0.9 },
     { method: 'HGPO', v: 36.4, sd: 0.7 },

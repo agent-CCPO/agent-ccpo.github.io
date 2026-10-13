@@ -942,8 +942,8 @@
     const host = $('.timing', root);
     const arms = [
       ['noSummary', 'w/o context summary', markers(2, 2)],
-      ['historyOnly', 'History-only window', markers(4, 0)],
-      ['futureOnly', 'Future-only window', markers(0, 4)],
+      ['historyOnly', 'History-only policy', markers(4, 0)],
+      ['futureOnly', 'Future-only policy', markers(0, 4)],
     ];
     host.append(el('div', { class: 'timing-row head', html: '<div></div>' + arms.map((a) => `<div>${a[1]}<small>${a[2]} &nbsp;vs full CCPO</small></div>`).join('') }));
     Object.entries(F.timing).forEach(([cat, byArm]) => {

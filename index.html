@@ -4,11 +4,11 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>CCPO | Contextual Credit Policy Optimization</title>
-  <meta name="description" content="CCPO assigns step-level credit to LLM agents by weighting observation-matched peers by contextual similarity and combining history-conditioned return credit with realized future progress. No value critic, no extra environment interactions.">
+  <meta name="description" content="CCPO assigns step-level credit to LLM agents by weighting observation-matched peers by contextual similarity and pairing historical credit with future credit, both computed from collected rollouts without an auxiliary value critic.">
   <link rel="canonical" href="https://agent-ccpo.github.io/">
   <meta property="og:type" content="website">
   <meta property="og:title" content="Contextual Credit Policy Optimization">
-  <meta property="og:description" content="Critic-free, step-level credit for long-horizon LLM agents: contextual peer weighting plus history and future views of credit.">
+  <meta property="og:description" content="Critic-free, step-level credit for long-horizon LLM agents: contextual peer weighting with historical and future credit.">
   <meta property="og:url" content="https://agent-ccpo.github.io/">
   <meta property="og:image" content="https://agent-ccpo.github.io/static/img/social-card.png">
   <meta name="twitter:card" content="summary_large_image">
@@ -18,7 +18,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="static/css/site.css?v=20261009e">
+  <link rel="stylesheet" href="static/css/site.css?v=20261012a">
 </head>
 <body>
 
@@ -47,9 +47,9 @@
     <div class="wrap hero-main">
       <h1><span>Contextual Credit</span> <span class="thin">Policy Optimization</span></h1>
       <p class="hero-lede">
-        Step-level credit for long-horizon LLM agents. CCPO weighs each observation-matched peer by
-        <b>how similar its context is</b>, then credits a step for its <b>history-conditioned return</b>
-        and for the <b>progress realized shortly after</b>. No value critic, no extra environment interactions.
+        Step-level credit for long-horizon LLM agents. CCPO weights observation-matched peers by
+        <b>contextual similarity</b> and pairs <b>historical credit</b> with <b>future credit</b>, so a step is
+        credited for the progress it makes, not only for its trajectory&rsquo;s eventual outcome. No value critic.
       </p>
       <div class="hero-people">
         <p class="authors">
@@ -99,21 +99,21 @@
       <div class="tldr reveal">
         <div class="tldr-text">
           <span class="label">TL;DR</span>
-          Group-based RL compares steps that saw the same observation. CCPO asks two further questions of every
-          step: <span class="c-peer">which peers actually share its context</span>, and
-          <span class="c-fut">did the next few steps move toward success</span>, or was the trajectory already on
-          a good path?
+          Group-based RL derives step-level credit by comparing steps that saw the same observation. Two
+          challenges remain: <span class="c-peer">whom a step should be compared with</span>, and
+          <span class="c-fut">what a step should be credited for</span>. CCPO addresses both in hindsight,
+          from rollouts already collected for training.
         </div>
         <div class="questions">
           <article class="card question q1">
-            <h3>Which peers should count?</h3>
-            <p>Identical observations can occur after different preceding actions, reasoning, exploration depth and accumulated context. Peers in a group are not equally informative for a particular query.</p>
-            <p class="answer">&rarr; Weight each peer by contextual similarity to the query.</p>
+            <h3>Whom should a step be compared with?</h3>
+            <p>Identical observations can occur after different preceding actions, reasoning, exploration depth and accumulated context. Peers that share an observation are not equally informative for the step being evaluated.</p>
+            <p class="answer">&rarr; Weight observation-matched peers by contextual similarity, so peers from similar contexts contribute more to the step&rsquo;s baseline.</p>
           </article>
           <article class="card question q2">
-            <h3>Did this step make progress?</h3>
-            <p>A favorable terminal outcome can hide redundant actions or detours inside a successful trajectory.</p>
-            <p class="answer">&rarr; Pair history-conditioned return credit with the value change over a short realized continuation.</p>
+            <h3>What should a step be credited for?</h3>
+            <p>A return comparison credits a step for belonging to a trajectory that ended well, but an eventual success can include redundant actions or detours.</p>
+            <p class="answer">&rarr; Pair historical credit with future credit, the change in contextual outcome value over a short realized continuation.</p>
           </article>
         </div>
       </div>
@@ -121,9 +121,9 @@
       <div class="contribs reveal">
         <h2>Contributions</h2>
         <ol class="contrib">
-          <li><b>Dual-view contextual credit from history and future progress.</b>Step-level credit combines a history-conditioned return residual with estimated value change over a future horizon, capturing outcome-relative performance and local progress.</li>
-          <li><b>Contextual similarity for step-level peer weighting.</b>Peer returns are aggregated with continuous weights set by the similarity between query and peer context representations, producing a context-dependent baseline.</li>
-          <li><b>Semantic and structural context representations.</b>Hidden states of recent interactions are combined with accumulated trajectory statistics, enabling context-sensitive comparisons without training an auxiliary value network.</li>
+          <li><b>Contextual credit estimation from history and future progress.</b>Step-level credit combines a history-conditioned return residual with estimated value change over a future horizon, capturing outcome-relative performance and local progress. Analysis shows complementary effects of history and future credit as learning evolves.</li>
+          <li><b>Contextual similarity for step-level peer weighting.</b>Peer returns are aggregated with continuous weights set by the similarity between query and peer context representations, producing a context-dependent baseline. Replacing these weights with uniform ones lowers success by 3.7 and 2.6 points.</li>
+          <li><b>Semantic and structural context representations.</b>Semantic hidden states of recent interactions are combined with accumulated trajectory statistics, enabling context-sensitive comparisons across trajectories without training an auxiliary value critic.</li>
         </ol>
       </div>
     </div>
@@ -187,7 +187,7 @@
                 </p>
               </div>
               <div class="eq"><img class="tex" data-eq="weight" src="static/eq/weight.svg" width="175" height="14" style="--w:17.507" alt="\bar w_{(i,t),(j,s)}\ \propto\ \exp\!\big(-\lVert\phi_{i,t}-\phi_{j,s}\rVert_2\,/\,\tau_B\big)"><img class="tex" data-eq="baseline" src="static/eq/baseline.svg" width="133" height="28" style="--w:13.345" alt="\mathcal{B}_{i,t}[r]=\sum_{(j,s)\in\mathcal{P}_{i,t}}\bar w_{(i,t),(j,s)}\,r_{j,s}"></div>
-              <p>Each step&rsquo;s context is a frozen LLM&rsquo;s final-layer hidden state at the last prompt token, concatenated with a trajectory summary: elapsed steps, distinct-observation count, novelty fraction and a revisit indicator.</p>
+              <p>Each step&rsquo;s context is a frozen LLM&rsquo;s final-layer hidden state at the last prompt token, concatenated with a trajectory summary: elapsed steps, distinct-observation count, novelty fraction and a revisit indicator. The prompt holds only the most recent steps, so the summary supplies the earlier history.</p>
               <p>Peers closer to the query in this space contribute more; the bandwidth &tau;<sub>B</sub> scales with the median pairwise context distance in the bucket.</p>
             </div>
 
@@ -203,7 +203,7 @@
                 </div>
               </div>
               <div class="eq eq-row"><img class="tex" data-eq="value" src="static/eq/value.svg" width="60" height="14" style="--w:5.957" alt="V_{i,s}=\mathcal{B}_{i,s}[Z]"><img class="tex" data-eq="outcome" src="static/eq/outcome.svg" width="68" height="14" style="--w:6.782" alt="Z_{i,s}=\gamma^{\,T_i-s}R_i"><img class="tex" data-eq="horizon" src="static/eq/horizon.svg" width="95" height="14" style="--w:9.494" alt="t^+=\min(t+K_{\mathrm F},\,T_i)"></div>
-              <p><strong class="c-hist">Historical credit</strong> asks whether this trajectory&rsquo;s return beat what contextually similar peers obtained. <strong class="c-fut">Future credit</strong> asks whether contextual outcome value grew over the next K<sub>F</sub> realized steps, even without intermediate rewards.</p>
+              <p><strong class="c-hist">Historical credit</strong> compares the step&rsquo;s return with the contextual peer baseline, so it depends on how the trajectory ends. <strong class="c-fut">Future credit</strong> asks whether the step itself moved the trajectory to a more valuable context over the next K<sub>F</sub> realized steps.</p>
               <p>Future endpoints are used only during training.</p>
             </div>
 
@@ -215,7 +215,7 @@
                 </div>
               </div>
               <div class="eq"><img class="tex" data-eq="advantage" src="static/eq/advantage.svg" width="111" height="16" style="--w:11.114" alt="A^{\mathrm{CC}}_{i,t}=\mathcal{N}_{x_i}\big[\,C^{\mathrm H}+C^{\mathrm F}\,\big]_{i,t}"><img class="tex" data-eq="advantage-sum" src="static/eq/advantage-sum.svg" width="79" height="15" style="--w:7.913" alt="A^{\mathrm{CC}}_{i,t}=A^{\mathrm H}_{i,t}+A^{\mathrm F}_{i,t}"></div>
-              <p>The two signals are added with unit coefficients and normalized within each task. The advantage weights the step&rsquo;s response tokens in a dual-clipped PPO objective with a KL penalty toward the frozen reference policy.</p>
+              <p>Historical credit and task-standardized future credit are added with unit coefficients and normalized within each task. The advantage weights the step&rsquo;s response tokens in a dual-clipped PPO objective with a KL penalty toward the frozen reference policy.</p>
               <p>An episode-augmented variant adds a GRPO-style episode advantage, A<sub>CC</sub>&nbsp;+&nbsp;A<sub>EP</sub>.</p>
             </div>
           </div>
@@ -226,7 +226,7 @@
           <img src="static/figures/pipeline.svg" alt="CCPO pipeline: group rollout and peer matching, context representation from a frozen LLM and trajectory statistics, weighted group baseline, dual contextual credit, and the PPO update.">
         </button>
       </div>
-        <figcaption><b>Contextual credit policy optimization of multi-step tasks.</b> Contextual similarity weights observation-matched peers. A history-conditioned return residual and estimated outcome-value change over a short future window yield step-level credit from collected rollouts, without an auxiliary value critic.</figcaption>
+        <figcaption><b>Contextual credit policy optimization of multi-step tasks.</b> Contextual similarity weights observation-matched peers. A history-conditioned return residual and estimated outcome-value change over a short future window yield step-level credit from collected rollouts without an auxiliary value critic.</figcaption>
       </figure>
 
       <dl class="spec reveal">
@@ -243,7 +243,7 @@
     <div class="wrap">
       <header class="section-head reveal">
         <h2>Results</h2>
-        <p class="lede">CCPO is evaluated on two multi-step benchmarks, ALFWorld (text-based household tasks) and WebShop (web shopping), with Qwen2.5-1.5B-Instruct and Qwen2.5-7B-Instruct. It is compared with off-the-shelf LLMs, prompt-based agents and RL training methods. At both model sizes, a CCPO variant has the highest mean success rate among the RL methods on ALFWorld and on WebShop.</p>
+        <p class="lede">CCPO is evaluated on two multi-step benchmarks, ALFWorld (text-based household tasks) and WebShop (web shopping), with Qwen2.5-1.5B-Instruct and Qwen2.5-7B-Instruct. It is compared with off-the-shelf LLMs, prompt-based agents and RL training methods. CCPO leads the listed RL baselines in mean success, reaching 96.9% and 97.4% on ALFWorld and 75.0% and 79.4% on WebShop at 1.5B and 7B, and outperforms GRPO by up to 21.6 and 18.5 points.</p>
       </header>
 
       <div class="card viz reveal" id="results-viz">
@@ -276,7 +276,7 @@
     <div class="wrap">
       <header class="section-head reveal">
         <h2>Ablations</h2>
-        <p class="lede">All ablations use Qwen2.5-1.5B-Instruct, with A<sub>CC</sub> on ALFWorld and A<sub>CC</sub>&nbsp;+&nbsp;A<sub>EP</sub> on WebShop as reference configurations. Excluding the query&rsquo;s own trajectory, contextual weighting, and both credit channels each contribute.</p>
+        <p class="lede">All ablations use Qwen2.5-1.5B-Instruct, with A<sub>CC</sub> on ALFWorld and A<sub>CC</sub>&nbsp;+&nbsp;A<sub>EP</sub> on WebShop as reference configurations. Contextual weighting outperforms uniform weighting, and historical and future credit are complementary: uniform weights lower success by 3.7 and 2.6 points, and either credit alone lowers it by up to 12.3.</p>
       </header>
 
       <div class="card viz reveal" id="ablation-viz">
@@ -314,14 +314,14 @@
         <span class="mks"><i class="mk mk-h"></i></span> history step,
         <span class="mks"><i class="mk mk-a"></i></span> current step,
         <span class="mks"><i class="mk mk-f"></i></span> future step.
-        The default two steps each way outperforms every tested asymmetric window, and widening to three reduces success from 96.9% to 91.4%. Window variations are restricted to ALFWorld, where successful 1.5B trajectories average 8.7 steps versus 5.1 on WebShop. Error bars: &plusmn;1 SD over three seeds.
+        The default two steps each way outperforms every tested asymmetric window and both one and three steps each way; widening to three reduces success from 96.9% to 91.4%. Window variations are restricted to ALFWorld, where successful 1.5B trajectories average 8.7 steps versus 5.1 on WebShop. Error bars: &plusmn;1 SD over three seeds.
       </p>
 
       <details class="table-details reveal">
         <summary>Full ablation table <small>all ALFWorld sub-tasks and WebShop score</small></summary>
         <div class="table-scroll">
           <div id="ablation-table"></div>
-          <p class="table-note">H and F denote active historical and future credit spans, with W&nbsp;=&nbsp;H&nbsp;+&nbsp;F&nbsp;+&nbsp;1. Zero marks a disabled credit channel. Channel-only rows retain K<sub>H</sub>&nbsp;=&nbsp;K<sub>F</sub>&nbsp;=&nbsp;2; temporal-window rows also change the actual window lengths. A dash means the configuration was not run on WebShop.</p>
+          <p class="table-note">H and F denote active historical and future credit spans, with W&nbsp;=&nbsp;H&nbsp;+&nbsp;F&nbsp;+&nbsp;1. Zero marks a disabled credit channel. Channel-only rows retain K<sub>H</sub>&nbsp;=&nbsp;K<sub>F</sub>&nbsp;=&nbsp;2. Temporal-window rows also change the actual window lengths. A dash means the configuration was not run on WebShop.</p>
         </div>
       </details>
     </div>
@@ -355,7 +355,7 @@
             <div class="keys">
               <div class="key">
                 <div class="key-value">22.5%<small>&plusmn;1.8</small></div>
-                <p>CCPO&rsquo;s repeated-observation rate on ALFWorld evaluation rollouts, versus 26.8&ndash;41.0% for the baselines.</p>
+                <p>CCPO&rsquo;s revisit rate across three ALFWorld evaluation draws, versus 26.8&ndash;41.0% for the baselines.</p>
               </div>
             </div>
           </div>
@@ -375,8 +375,8 @@
             <div class="viz">
               <div class="viz-head">
                 <div>
-                  <h4 class="viz-title">Repeated-observation rate on ALFWorld evaluation rollouts</h4>
-                  <p class="viz-sub">Share of steps whose observation was already seen in the same rollout. Mean &plusmn; SD over three evaluation draws; lower means less revisiting.</p>
+                  <h4 class="viz-title">Revisit rates on ALFWorld evaluation rollouts</h4>
+                  <p class="viz-sub">Mean &plusmn; SD over three evaluation draws; lower means less revisiting.</p>
                 </div>
               </div>
               <div class="mini-bars" id="revisit-bars"></div>
@@ -389,7 +389,7 @@
           <div class="finding-head is-solo">
             <div class="finding-text">
               <h3>Contextual credit keeps a learning signal as the episode-level one fades.</h3>
-              <p>Both advantages are computed from the same A<sub>CC</sub>-only ALFWorld rollouts; A<sub>EP</sub> is logged for comparison and never backpropagated. As validation success improves, the mean absolute episode advantage diminishes while the contextual advantage remains elevated.</p>
+              <p>Both advantages are computed from the same A<sub>CC</sub>-only ALFWorld rollouts; A<sub>EP</sub> is logged for comparison and never backpropagated. As validation success improves, the mean absolute episode advantage diminishes while the contextual advantage remains elevated, so a learning signal remains after most episodes succeed.</p>
             </div>
           </div>
           <div class="finding-body">
@@ -480,16 +480,16 @@
           <div class="finding-head">
             <div class="finding-text">
               <h3>Changing the context representation changes when the agent acts.</h3>
-              <p>Each ablated policy is paired with full CCPO on the same 140 evaluation games, comparing the step at which an action type first occurs. For opening a container, a future-only window acts earlier than full CCPO in 72.1% of paired games, while a history-only window acts later in 54.3%.</p>
+              <p>Each ablated policy is paired with full CCPO on the same 140 evaluation games, comparing the step at which an action type first occurs. Against full CCPO, the future-only policy first opens a receptacle earlier in 72.1% of paired games, and the history-only policy later in 54.3%.</p>
             </div>
             <div class="keys two">
               <div class="key">
                 <div class="key-value num">72.1%</div>
-                <p><b>Future-only window:</b> first <em>open</em> comes earlier than under full CCPO.</p>
+                <p><b>Future-only policy:</b> first <em>open</em> comes earlier than under full CCPO.</p>
               </div>
               <div class="key">
                 <div class="key-value num">54.3%</div>
-                <p><b>History-only window:</b> first <em>open</em> comes later.</p>
+                <p><b>History-only policy:</b> first <em>open</em> comes later.</p>
               </div>
             </div>
           </div>
@@ -600,9 +600,9 @@
 </div>
 <div class="tip" id="tip" role="tooltip"></div>
 
-<script defer src="static/js/data.js?v=20261009e"></script>
-<script defer src="static/js/figure-data.js?v=20261009e"></script>
-<script defer src="static/js/viz.js?v=20261009e"></script>
-<script defer src="static/js/site.js?v=20261009e"></script>
+<script defer src="static/js/data.js?v=20261012a"></script>
+<script defer src="static/js/figure-data.js?v=20261012a"></script>
+<script defer src="static/js/viz.js?v=20261012a"></script>
+<script defer src="static/js/site.js?v=20261012a"></script>
 </body>
 </html>
