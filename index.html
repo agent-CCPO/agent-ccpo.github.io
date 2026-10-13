@@ -276,7 +276,7 @@
     <div class="wrap">
       <header class="section-head reveal">
         <h2>Ablations</h2>
-        <p class="lede">All ablations use Qwen2.5-1.5B-Instruct, with A<sub>CC</sub> on ALFWorld and A<sub>CC</sub>&nbsp;+&nbsp;A<sub>EP</sub> on WebShop as reference configurations. Contextual weighting outperforms uniform weighting, and historical and future credit are complementary: uniform weights lower success by 3.7 and 2.6 points, and either credit alone lowers it by up to 12.3.</p>
+        <p class="lede">All ablations use Qwen2.5-1.5B-Instruct, with A<sub>CC</sub> on ALFWorld and A<sub>CC</sub>&nbsp;+&nbsp;A<sub>EP</sub> on WebShop as reference configurations. Contextual weighting outperforms uniform weighting, and historical and future credit serve as complementary learning signals: uniform weights lower success by 3.7 and 2.6 points, and either credit alone lowers it by up to 12.3.</p>
       </header>
 
       <div class="card viz reveal" id="ablation-viz">
@@ -376,7 +376,7 @@
               <div class="viz-head">
                 <div>
                   <h4 class="viz-title">Revisit rates on ALFWorld evaluation rollouts</h4>
-                  <p class="viz-sub">Mean &plusmn; SD over three evaluation draws; lower means less revisiting.</p>
+                  <p class="viz-sub">Share of steps whose observation was already seen in the same rollout. Mean &plusmn; SD over three evaluation draws; lower means less revisiting.</p>
                 </div>
               </div>
               <div class="mini-bars" id="revisit-bars"></div>
