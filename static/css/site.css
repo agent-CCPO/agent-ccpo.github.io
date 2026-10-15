@@ -216,6 +216,14 @@ sup, sub { line-height: 0; }
   .hero { display: flex; flex-direction: column; min-height: min(calc(100vh - var(--nav-h)), 1000px); }
   .hero-main { flex: 1 1 auto; display: flex; flex-direction: column; justify-content: space-between; }
   .teaser-gifs { width: min(100%, max(680px, calc((100vh - var(--nav-h) - 560px) * 3.432))); }
+  /* The video may grow past the text column, up to 1400px, while the hero still fits one screen. */
+  .hero .teaser-video { width: min(1400px, 100vw - 2 * clamp(16px, 2.2vw, 32px), max(860px, calc((100vh - var(--nav-h) - 376px) * 1160 / 420))); margin-left: 50%; transform: translateX(-50%); }
+  /* Tighter hero spacing on desktop so the video gets the height. */
+  .hero { padding-top: 20px; padding-bottom: 14px; }
+  .hero-main .hero-lede { margin-top: 14px; }
+  .hero-main .hero-people { margin-top: 16px; }
+  .hero-main .hero-cta { margin-top: 18px; }
+  .hero-figure.hero-video { margin-top: 18px; }
 }
 .hero-main .hero-lede { margin-inline: auto; max-width: none; }
 .hero-main .hero-cta { justify-content: center; }
@@ -231,6 +239,8 @@ sup, sub { line-height: 0; }
 .teaser-legend > span { display: inline-flex; align-items: center; gap: 7px; }
 .teaser-legend i { width: 12px; height: 12px; border-radius: 3px; background: var(--c); }
 .teaser-legend i.ring { background: transparent; box-shadow: inset 0 0 0 1.5px #8a91a0; }
+/* Teaser video (1160x420, made by tools/make_teaser_video.py; dark ground #0b1015 to match the hero). */
+.teaser-video { display: block; width: 100%; height: auto; aspect-ratio: 1160 / 420; border-radius: 12px; background: #0b1015; box-shadow: 0 0 0 1px var(--night-line); }
 .eyebrow {
   display: inline-flex;
   align-items: center;
