@@ -225,12 +225,12 @@ sup, sub { line-height: 0; }
 .figure.hero-figure figcaption b { color: #fff; }
 /* The teaser: two trajectory GIFs (rendered by tools/make_teaser_gifs.py) and their legend. */
 .teaser-gifs { display: grid; gap: 10px; margin-inline: auto; }
-.teaser-gifs img { display: block; width: 100%; height: auto; border-radius: 10px; background: #fff; }
+.teaser-gifs img { display: block; width: 100%; height: auto; border-radius: 10px; background: #141823; box-shadow: 0 0 0 1px var(--night-line); }
 .hero-teaser figcaption { display: grid; gap: 8px; justify-items: center; }
 .teaser-legend { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px 18px; }
 .teaser-legend > span { display: inline-flex; align-items: center; gap: 7px; }
 .teaser-legend i { width: 12px; height: 12px; border-radius: 3px; background: var(--c); }
-.teaser-legend i.ring { background: transparent; box-shadow: inset 0 0 0 1.5px #a9acb1; }
+.teaser-legend i.ring { background: transparent; box-shadow: inset 0 0 0 1.5px #8a91a0; }
 .eyebrow {
   display: inline-flex;
   align-items: center;
