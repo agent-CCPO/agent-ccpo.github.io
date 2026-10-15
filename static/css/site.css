@@ -215,7 +215,7 @@ sup, sub { line-height: 0; }
 @media (min-width: 1021px) {
   .hero { display: flex; flex-direction: column; min-height: min(calc(100vh - var(--nav-h)), 1000px); }
   .hero-main { flex: 1 1 auto; display: flex; flex-direction: column; justify-content: space-between; }
-  .hero-figure .figure-frame { width: min(100%, max(680px, calc((100vh - var(--nav-h) - 512px) * 3.58 + 28px))); margin-inline: auto; }
+  .teaser-gifs { width: min(100%, max(680px, calc((100vh - var(--nav-h) - 560px) * 3.432))); }
 }
 .hero-main .hero-lede { margin-inline: auto; max-width: none; }
 .hero-main .hero-cta { justify-content: center; }
@@ -223,6 +223,14 @@ sup, sub { line-height: 0; }
 .hero-figure .figure-frame { border-color: transparent; padding: clamp(8px, 1.1vw, 14px); }
 .figure.hero-figure figcaption { color: #aab1c0; margin-inline: auto; text-align: center; }
 .figure.hero-figure figcaption b { color: #fff; }
+/* The teaser: two trajectory GIFs (rendered by tools/make_teaser_gifs.py) and their legend. */
+.teaser-gifs { display: grid; gap: 10px; margin-inline: auto; }
+.teaser-gifs img { display: block; width: 100%; height: auto; border-radius: 10px; background: #fff; }
+.hero-teaser figcaption { display: grid; gap: 8px; justify-items: center; }
+.teaser-legend { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px 18px; }
+.teaser-legend > span { display: inline-flex; align-items: center; gap: 7px; }
+.teaser-legend i { width: 12px; height: 12px; border-radius: 3px; background: var(--c); }
+.teaser-legend i.ring { background: transparent; box-shadow: inset 0 0 0 1.5px #a9acb1; }
 .eyebrow {
   display: inline-flex;
   align-items: center;

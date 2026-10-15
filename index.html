@@ -18,7 +18,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="static/css/site.css?v=20261012a">
+  <link rel="stylesheet" href="static/css/site.css?v=20261014a">
 </head>
 <body>
 
@@ -84,11 +84,27 @@
         </a>
       </div>
 
-      <figure class="figure hero-figure">
-        <button class="figure-frame" data-zoom="static/figures/teaser.svg" data-caption="Overview of CCPO (Figure 1).">
-          <img src="static/figures/teaser.svg" alt="Overview of CCPO in four panels: match peers by observation across trajectories, weight them by context, assign historical and future credit, and update the policy with PPO and a KL penalty.">
-        </button>
-        <figcaption><b>Overview of CCPO.</b> CCPO combines contextually weighted peer comparisons and short-horizon future progress for critic-free step-level credit assignment.</figcaption>
+      <figure class="figure hero-figure hero-teaser">
+        <div class="teaser-gifs">
+          <picture>
+            <source media="(max-width: 760px)" srcset="static/gif/game42-narrow.gif" width="400" height="145">
+            <img src="static/gif/game42.gif" width="1160" height="169" alt="Evaluation trajectories on the ALFWorld task put a toiletpaper in toiletpaperhanger, one cell per step. GiGPO, HGPO and G2PO keep revisiting the same places and fail at the 50-step limit. CCPO solves the task in 7 steps.">
+          </picture>
+          <picture>
+            <source media="(max-width: 760px)" srcset="static/gif/game133-narrow.gif" width="400" height="145">
+            <img src="static/gif/game133.gif" width="1160" height="169" alt="Evaluation trajectories on the ALFWorld task find two spraybottle and put them in toilet, one cell per step. GiGPO, HGPO and G2PO fail at the 50-step limit. CCPO solves the task in 15 steps.">
+          </picture>
+        </div>
+        <figcaption>
+          <span><b>ALFWorld evaluation trajectories (Qwen2.5-1.5B-Instruct).</b> Each cell is one step. GiGPO, HGPO and G2PO fail at the 50-step limit on both tasks; CCPO solves them in 7 and 15 steps.</span>
+          <span class="teaser-legend">
+            <span><i style="--c:#f2c14e"></i>where the target object is</span>
+            <span><i style="--c:#7faedb"></i>where it goes</span>
+            <span><i style="--c:#dcdde0"></i>other places</span>
+            <span><i style="--c:#3b4150"></i>action (open, take or put)</span>
+            <span><i class="ring"></i>invalid action</span>
+          </span>
+        </figcaption>
       </figure>
     </div>
   </section>
@@ -600,9 +616,9 @@
 </div>
 <div class="tip" id="tip" role="tooltip"></div>
 
-<script defer src="static/js/data.js?v=20261012a"></script>
-<script defer src="static/js/figure-data.js?v=20261012a"></script>
-<script defer src="static/js/viz.js?v=20261012a"></script>
-<script defer src="static/js/site.js?v=20261012a"></script>
+<script defer src="static/js/data.js?v=20261014a"></script>
+<script defer src="static/js/figure-data.js?v=20261014a"></script>
+<script defer src="static/js/viz.js?v=20261014a"></script>
+<script defer src="static/js/site.js?v=20261014a"></script>
 </body>
 </html>
