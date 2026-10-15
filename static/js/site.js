@@ -120,7 +120,23 @@
     });
   }
 
-  const boot = () => { findingTabs(); trackSections(); reveal(); lightbox(); copyButtons(); };
+  // The hero video comes in a dark and a light rendering; play the one that matches the system theme.
+  function themedVideo() {
+    const v = $('.teaser-video');
+    if (!v) return;
+    const dark = matchMedia('(prefers-color-scheme: dark)');
+    const pick = () => {
+      const src = dark.matches ? v.dataset.dark : v.dataset.light;
+      if (v.getAttribute('src') === src) return;
+      v.poster = src.replace('.mp4', '-poster.jpg');
+      v.src = src;
+      v.play().catch(() => {});
+    };
+    pick();
+    dark.addEventListener('change', pick);
+  }
+
+  const boot = () => { themedVideo(); findingTabs(); trackSections(); reveal(); lightbox(); copyButtons(); };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
   else boot();
 })();

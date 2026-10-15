@@ -1109,3 +1109,177 @@ table.data.is-compact thead tr:first-child th { padding-bottom: 9px; border-bott
   .nav, .lightbox, .tip { display: none !important; }
   .reveal { opacity: 1; transform: none; }
 }
+
+/* ------------------------------------------------------------------ */
+/* Themes follow the system setting. Dark: one near-black base for    */
+/* the whole page. Light: one warm off-white base. The rules above    */
+/* are the shared layout; each block below only recolours it.         */
+/* ------------------------------------------------------------------ */
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+    --ink: #eef0f4;
+    --ink-2: #c9cfda;
+    --ink-3: #9ba3b4;
+    --ink-4: #6f778a;
+    --line: #262c3a;
+    --line-soft: #1b2030;
+    --paper: #0c0f16;
+    --surface: #131722;
+    --surface-2: #171c28;
+    --hist: #a98bf0;
+    --hist-soft: rgba(169, 139, 240, 0.15);
+    --hist-ink: #b9a2f4;
+    --fut: #4fcf9b;
+    --fut-soft: rgba(79, 207, 155, 0.13);
+    --fut-ink: #6ddcae;
+    --anchor: #f59a55;
+    --anchor-soft: rgba(245, 154, 85, 0.13);
+    --anchor-ink: #f7ad74;
+    --peer: #5b9ff0;
+    --peer-soft: rgba(91, 159, 240, 0.15);
+    --peer-ink: #8fbaf3;
+    --excl: #e86352;
+    --bar-base: #4a5266;
+    --bar-shelf: #2b3140;
+    --grid: #20263a;
+    --neutral-seg: #353b4a;
+    --early: #e0743a;
+    --late: #4a8fe6;
+    --shadow: none;
+    /* chart colours read by viz.js */
+    --c-ink: #eef0f4; --c-hist: #a98bf0; --c-fut: #4fcf9b; --c-anchor: #f59a55; --c-muted: #8d95a7;
+    --c-page: #0c0f16; --c-grid: rgba(255, 255, 255, 0.08); --c-axis: rgba(255, 255, 255, 0.22);
+    --c-line2: #5d6578; --c-val: #9ba3b4; --c-corr-neutral: 30,35,48; --c-corr-pos: 110,150,220; --c-corr-neg: 224,116,58;
+    --c-corr-strong: #0c0f16; --c-other: #424a5c; --c-goal: #6ea8e6; --c-action: #dde1e8; --c-ring: #8a91a0; --c-same: #353b4a;
+  }
+  .section.is-white { background: transparent; border-block: 1px solid var(--line-soft); }
+  .nav-cta, .btn-light, .seg button[aria-pressed="true"] { color: #11141b; }
+  .btn-light:hover { background: #e6e8ee; }
+  .btn-ink, .finding-tab.is-on, .play, .tip { color: #0c0f16; }
+  .play:hover { background: #d5d9e2; }
+  .finding-tab.is-on b { color: #c4581a; }
+  .tip .t-obs { color: #a4470c; }
+  .tip .t-head, .tip .t-mute { color: #4c5262; }
+  .seg { background: #1d2230; }
+  .seg button { color: var(--ink-3); }
+  .bar-row:hover { background: rgba(255, 255, 255, 0.03); }
+  .bar-row.is-shelf .bar-fill { background: repeating-linear-gradient(135deg, var(--bar-shelf) 0 5px, #232838 5px 8px); }
+  table.data tr.ours td, table.data td.primary, table.data th.primary { background-color: #171c28; }
+  .legend i.ring, .legend i.dot.hollow { background: var(--paper); }
+  .rc[data-k="other"] { --k: var(--c-other); }
+  .rc[data-k="goal"] { --k: var(--c-goal); }
+  .rc[data-k="action"] { --k: var(--c-action); }
+  .rc[data-k="invalid"] { --k: var(--paper); box-shadow: inset 0 0 0 1.5px var(--c-ring); }
+  .twin-note { border-color: rgba(245, 154, 85, 0.4); }
+  .corr-scale i { background: linear-gradient(90deg, #e0743a, #1e2330 50%, #6e96dc); }
+  .cp-table td.is-off { background: #1b2030; }
+  .timing-row.is-key .seg3.s { --c: #5a4634; }
+  .site-footer { background: var(--paper); border-top-color: var(--line-soft); }
+  .footer-logos img.is-wordmark { filter: brightness(0) invert(1); opacity: 0.85; }
+  table.data td.best, table.data tr.ours td.best, table.data td.best.primary { background: #234a78; color: #fff; }
+  /* top bar and footer: a band of their own, lighter than the page */
+  .nav { background: rgba(22, 27, 39, 0.95); border-bottom-color: #262c3a; }
+  .site-footer { background: #161b27; border-top-color: #262c3a; }
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    color-scheme: light;
+    --ink: #11141b; --ink-2: #3c424e; --ink-3: #676d7b; --ink-4: #9a9fa9;
+    --line: #e2e0d8; --line-soft: #eceae4;
+    --paper: #f7f6f2; --surface: #ffffff; --surface-2: #fbfaf7;
+    --hist: #7c4ddb; --hist-soft: #f0eafc; --hist-ink: #5b34b3;
+    --fut: #1f9d6b; --fut-soft: #e3f5ec; --fut-ink: #12734c;
+    --anchor: #e8782a; --anchor-soft: #fdeedf; --anchor-ink: #ad4f0c;
+    --peer: #2f7de1; --peer-soft: #e5effc; --peer-ink: #1b5cb4;
+    --excl: #d8503f;
+    --bar-base: #c8ccd4; --bar-shelf: #e4e5e9; --grid: #e9e7e1; --neutral-seg: #e6e6e3; --early: #d9662b; --late: #2b74d1;
+    --shadow: 0 1px 2px rgba(17, 20, 27, 0.04), 0 8px 24px -12px rgba(17, 20, 27, 0.12);
+    --c-ink: #11141b; --c-hist: #7c4ddb; --c-fut: #1f9d6b; --c-anchor: #e8782a; --c-muted: #8d93a0;
+    --c-page: #ffffff; --c-grid: #e9e7e1; --c-axis: #c9c7c0; --c-line2: #b3b8c2; --c-val: #676d7b;
+    --c-corr-neutral: 240,239,236; --c-corr-pos: 63,74,99; --c-corr-neg: 217,102,43; --c-corr-strong: #ffffff;
+    --c-other: #dcdde0; --c-goal: #7faedb; --c-action: #3b4150; --c-ring: #a9acb1; --c-same: #e6e6e3;
+  }
+  body { background: var(--paper); }
+  /* top bar */
+  .nav { background: rgba(247, 246, 242, 0.9); border-bottom-color: var(--line); color: var(--ink); }
+  .nav-links a { color: var(--ink-3); }
+  .nav-links a:hover, .nav-links a.is-active { color: var(--ink); }
+  .nav-cta { background: var(--ink); color: #fff; }
+  .nav-cta:hover { background: #2a2f3b; }
+  .on-night .mk-h { color: var(--hist); } .on-night .mk-a { color: var(--anchor); } .on-night .mk-f { color: var(--fut); }
+  /* hero: the same flat colour as the rest of the page */
+  .hero { background: var(--paper); color: var(--ink); }
+  .hero h1 { color: var(--ink); } .hero h1 .thin { color: var(--ink-2); }
+  .hero-lede { color: var(--ink-2); } .hero-lede b { color: var(--ink); }
+  .authors { color: var(--ink); } .authors sup { color: var(--ink-3); }
+  .affils { color: var(--ink-3); } .affils .note { color: var(--ink-4); }
+  .btn-light { background: var(--ink); color: #fff; }
+  .btn-light:hover { background: #2a2f3b; }
+  .btn-ghost { border-color: var(--line); color: var(--ink); background: var(--surface); }
+  .btn-ghost:hover { border-color: var(--ink-4); }
+  /* sections and controls */
+  .section.is-white { background: transparent; border-block: 1px solid var(--line-soft); }
+  .seg { background: #ecebe6; }
+  .seg button { color: var(--ink-3); }
+  .seg button[aria-pressed="true"] { background: #fff; color: var(--ink); }
+  .btn-ink, .finding-tab.is-on, .play, .tip { color: #fff; }
+  .play:hover { background: #232836; }
+  .finding-tab.is-on b { color: #f7a968; }
+  .tip .t-obs { color: #ffd9b8; }
+  .tip .t-head, .tip .t-mute { color: #b9bfcc; }
+  .bar-row:hover { background: rgba(17, 20, 27, 0.03); }
+  .bar-row.is-shelf .bar-fill { background: repeating-linear-gradient(135deg, var(--bar-shelf) 0 5px, #f1f1f3 5px 8px); }
+  table.data tr.ours td, table.data td.primary, table.data th.primary { background-color: #f4f3ee; }
+  table.data td.best, table.data tr.ours td.best, table.data td.best.primary { background: #b9daf6; color: var(--ink); }
+  .legend i.ring, .legend i.dot.hollow { background: #fff; }
+  .twin-note { border-color: #f6d3b4; }
+  .corr-scale i { background: linear-gradient(90deg, #d9662b, #f0efec 50%, #3f4a63); }
+  .cp-table td.is-off { background: #eceff2; }
+  .timing-row.is-key .seg3.s { --c: #f2dcc6; }
+  /* citation and footer */
+  .cite { background: var(--paper); color: var(--ink); border-top: 1px solid var(--line-soft); }
+  .cite h2 { color: var(--ink); } .cite p { color: var(--ink-3); }
+  .bibtex { background: var(--surface); border-color: var(--line); }
+  .bibtex-bar { border-bottom-color: var(--line); color: var(--ink-3); }
+  .copy { border-color: var(--line); background: var(--surface-2); color: var(--ink); }
+  .copy:hover { background: #efeee9; }
+  .bibtex pre { color: var(--ink-2); }
+  .site-footer { background: var(--paper); border-top-color: var(--line); }
+  .footer-logos img.is-wordmark { filter: none; opacity: 1; }
+
+  /* --- top bar and footer: a band of their own --- */
+  .nav { background: rgba(235, 233, 226, 0.95); border-bottom-color: #dcd9cf; }
+  .site-footer { background: #ebe9e2; border-top-color: #dcd9cf; }
+  /* --- light hero keeps a texture: soft glows and a dot grid --- */
+  .hero {
+    background:
+      radial-gradient(900px 520px at 8% 108%, rgba(124, 77, 219, 0.10), transparent 62%),
+      radial-gradient(820px 480px at 100% -8%, rgba(31, 157, 107, 0.09), transparent 60%),
+      radial-gradient(rgba(17, 20, 27, 0.075) 1px, transparent 1.4px) 0 0 / 22px 22px,
+      var(--paper);
+  }
+  .teaser-video { background: #ffffff; box-shadow: 0 0 0 1px var(--line); }
+  /* --- Method walkthrough, drawn dark and shown through invert + hue-rotate --- */
+  /* The walkthrough is drawn for a dark page. On a black base, invert(1) hue-rotate(180deg) turns it into a
+     white panel with the same hues; that filter is its own inverse, so orange is pre-set to the colour that
+     comes out as the page's orange (#e8782a). */
+  .stage { background: #000; filter: invert(1) hue-rotate(180deg); }
+  .stage-tab.is-on b { color: #d36315; }
+  .cell .adv { color: #e5722b; }
+  .uv-resp { border: 1px solid rgba(211, 99, 21, 0.5); background: rgba(211, 99, 21, 0.07); }
+  .uv-resp .mini.adv { background: #d36315; }
+  .uv-resp code b { background: rgba(211, 99, 21, 0.36); }
+  .adv-stem { background: #d36315; }
+  .adv-stem::after { border-right: 2px solid #d36315; border-bottom: 2px solid #d36315; }
+  .outcome.is-y::after { background: #d36315; }
+  .ret-tag.y { color: #e5722b; }
+  .stage .pair.q .cell.o { box-shadow: inset 0 0 0 2px #d36315; }
+  .stage[data-phase="3"] .outcome.is-y { border: 1px solid #d36315; background: rgba(211, 99, 21, 0.2); }
+  .stage[data-phase="4"] .pair.q .cell.a { background: #d36315; }
+  .sw.q { box-shadow: inset 0 0 0 2px #d36315; }
+  .stage-legend .sw.q { box-shadow: inset 0 0 0 2.5px #d36315; }
+  .mini.q { box-shadow: inset 0 0 0 2px #d36315; }
+  .tk.a { border-color: #d36315; background: rgba(211, 99, 21, 0.16); color: #ee8244; }
+}

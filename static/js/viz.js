@@ -9,11 +9,18 @@
   const $ = (sel, root = document) => root.querySelector(sel);
   const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  const INK = '#11141b';
-  const HIST = '#7c4ddb';
-  const FUT = '#1f9d6b';
-  const ANCHOR = '#e8782a';
-  const MUTED = '#8d93a0';
+  // Chart colours come from the --c-* custom properties in site.css, so a light or dark
+  // theme only has to redefine them there. Fallbacks are the dark theme's values.
+  const cssv = (name, fallback) => getComputedStyle(document.documentElement).getPropertyValue(name).trim() || fallback;
+  const rgb = (name, fallback) => cssv(name, fallback).split(',').map(Number);
+  const INK = cssv('--c-ink', '#eef0f4');
+  const HIST = cssv('--c-hist', '#a98bf0');
+  const FUT = cssv('--c-fut', '#4fcf9b');
+  const ANCHOR = cssv('--c-anchor', '#f59a55');
+  const MUTED = cssv('--c-muted', '#8d95a7');
+  const PAGE = cssv('--c-page', '#0c0f16');
+  const GRIDC = cssv('--c-grid', 'rgba(255, 255, 255, 0.08)');
+  const AXISC = cssv('--c-axis', 'rgba(255, 255, 255, 0.22)');
 
   // ------------------------------------------------------------------ helpers
   function el(tag, attrs = {}, ...kids) {
@@ -543,11 +550,11 @@
       const inner = W - m.l - m.r;
       const x = (i) => m.l + inner * (i + 0.5) / pts.length;
       [60, 70, 80, 90, 100].forEach((t) => {
-        svg('line', { x1: m.l, x2: W - m.r, y1: y(t), y2: y(t), stroke: '#e9e7e1', 'stroke-width': 1 }, root);
+        svg('line', { x1: m.l, x2: W - m.r, y1: y(t), y2: y(t), stroke: GRIDC, 'stroke-width': 1 }, root);
         svg('text', { x: m.l - 8, y: y(t) + 4, 'text-anchor': 'end', class: 'axis-text' }, root).textContent = t;
       });
       svg('text', { x: m.l - 26, y: 12, class: 'axis-title' }, root).textContent = 'ALFWorld success (%)';
-      svg('path', { d: pts.map((p, i) => `${i ? 'L' : 'M'}${x(i)},${y(p.v[0])}`).join(''), fill: 'none', stroke: '#b3b8c2', 'stroke-width': 1.5 }, root);
+      svg('path', { d: pts.map((p, i) => `${i ? 'L' : 'M'}${x(i)},${y(p.v[0])}`).join(''), fill: 'none', stroke: cssv('--c-line2', '#5d6578'), 'stroke-width': 1.5 }, root);
       pts.forEach((p, i) => {
         const cx = x(i);
         const cy = y(p.v[0]);
@@ -558,7 +565,7 @@
           [1, -1].forEach((s) => svg('line', { x1: cx - 4, x2: cx + 4, y1: y(p.v[0] + s * sd), y2: y(p.v[0] + s * sd), stroke: INK, 'stroke-width': 1.5 }, root));
         }
         if (ours) svg('circle', { cx, cy, r: 10.5, fill: 'none', stroke: ANCHOR, 'stroke-width': 2 }, root);
-        svg('circle', { cx, cy, r: 6, fill: ours ? INK : '#fff', stroke: INK, 'stroke-width': 2 }, root);
+        svg('circle', { cx, cy, r: 6, fill: ours ? INK : PAGE, stroke: INK, 'stroke-width': 2 }, root);
         const labelY = Math.min(cy - (ours ? 17 : 12), y(p.v[0] + sd) - 7);
         svg('text', { x: cx, y: labelY, 'text-anchor': 'middle', class: 'pt-label' }, root).textContent = one(p.v[0]);
         // marker glyphs under the axis
@@ -574,7 +581,7 @@
           else if (k === p.H) {
             svg('circle', { cx: px, cy: gy, r: r - 0.2, fill: 'none', stroke: ANCHOR, 'stroke-width': 1.3 }, root);
             svg('circle', { cx: px, cy: gy, r: r - 2, fill: ANCHOR }, root);
-          } else svg('circle', { cx: px, cy: gy, r: r - 0.5, fill: '#fff', stroke: FUT, 'stroke-width': 1.3 }, root);
+          } else svg('circle', { cx: px, cy: gy, r: r - 0.5, fill: PAGE, stroke: FUT, 'stroke-width': 1.3 }, root);
         }
         svg('text', { x: cx, y: gy + 20, 'text-anchor': 'middle', class: 'pt-sub' }, root).textContent = `H${p.H} · F${p.F}`;
         if (ours) svg('text', { x: cx, y: gy + 34, 'text-anchor': 'middle', class: 'pt-sub', 'font-weight': 600, fill: INK }, root).textContent = 'CCPO';
@@ -654,10 +661,10 @@
 
       $('.replay-legend', root).innerHTML =
         `<span><i class="sq" style="--c:#f2c14e"></i>${meta.targetLegend}</span>` +
-        `<span><i class="sq" style="--c:#7faedb"></i>${meta.goalLegend}</span>` +
-        '<span><i class="sq" style="--c:#dcdde0"></i>other places</span>' +
-        '<span><i class="sq" style="--c:#3b4150"></i>action (open, take or put)</span>' +
-        '<span><i class="ring" style="--c:#a9acb1"></i>invalid action</span>' +
+        `<span><i class="sq" style="--c:var(--c-goal)"></i>${meta.goalLegend}</span>` +
+        '<span><i class="sq" style="--c:var(--c-other)"></i>other places</span>' +
+        '<span><i class="sq" style="--c:var(--c-action)"></i>action (open, take or put)</span>' +
+        '<span><i class="ring" style="--c:var(--c-ring)"></i>invalid action</span>' +
         (meta.twinText ? `<span><i class="ring" style="--c:${ANCHOR};border-width:2px"></i>identical observation</span>` : '');
       const note = $('.twin-note', root);
       note.classList.toggle('plain', !meta.twinText);
@@ -764,7 +771,7 @@
         svg('text', { x: (x(a) + x(b)) / 2, y: m.t + 13, 'text-anchor': 'middle', class: 'band-label' }, root).textContent = label;
       });
       [0, 0.2, 0.4, 0.6, 0.8, 1].forEach((t) => {
-        svg('line', { x1: m.l, x2: W - m.r, y1: y(t), y2: y(t), stroke: t ? '#e9e7e1' : '#c9c7c0', 'stroke-width': 1 }, root);
+        svg('line', { x1: m.l, x2: W - m.r, y1: y(t), y2: y(t), stroke: t ? GRIDC : AXISC, 'stroke-width': 1 }, root);
         svg('text', { x: m.l - 7, y: y(t) + 4, 'text-anchor': 'end', class: 'axis-text' }, root).textContent = t === 0 ? '0' : t === 1 ? '1' : t.toFixed(1);
       });
 
@@ -786,7 +793,7 @@
       const ends = keys.map((k) => ({ k, y: y(data[k][149]) })).sort((a, b) => a.y - b.y);
       for (let i = 1; i < ends.length; i++) if (ends[i].y - ends[i - 1].y < 15) ends[i].y = ends[i - 1].y + 15;
       ends.forEach((e) => {
-        svg('circle', { cx: x(150), cy: y(data[e.k][149]), r: 3.5, fill: SERIES[e.k].color, stroke: '#fff', 'stroke-width': 1.5 }, root);
+        svg('circle', { cx: x(150), cy: y(data[e.k][149]), r: 3.5, fill: SERIES[e.k].color, stroke: PAGE, 'stroke-width': 1.5 }, root);
         mathText(root, { x: x(150) + 9, y: e.y + 4, class: 'end-label', fill: INK }, SERIES[e.k]);
       });
 
@@ -795,8 +802,8 @@
       const val = data.val;
       const vLine = val.map(([s, p], i) => `${i ? 'L' : 'M'}${x(s).toFixed(1)},${y2(p).toFixed(1)}`).join('');
       svg('path', { d: `${vLine}L${x(150)},${y2(0)}L${x(val[0][0])},${y2(0)}Z`, fill: INK, opacity: 0.07 }, root);
-      svg('path', { d: vLine, fill: 'none', stroke: '#676d7b', 'stroke-width': 1.5 }, root);
-      svg('line', { x1: m.l, x2: W - m.r, y1: y2(0), y2: y2(0), stroke: '#c9c7c0', 'stroke-width': 1 }, root);
+      svg('path', { d: vLine, fill: 'none', stroke: cssv('--c-val', '#9ba3b4'), 'stroke-width': 1.5 }, root);
+      svg('line', { x1: m.l, x2: W - m.r, y1: y2(0), y2: y2(0), stroke: AXISC, 'stroke-width': 1 }, root);
       svg('text', { x: m.l + 4, y: y2(100) + 9, class: 'band-label' }, root).textContent = 'VALIDATION SUCCESS';
       [1, 50, 100, 150].forEach((s) => {
         svg('text', { x: x(s), y: y2(0) + 17, 'text-anchor': 'middle', class: 'axis-text' }, root).textContent = s;
@@ -805,7 +812,7 @@
 
       // hover: crosshair, one dot per series, tooltip
       const hair = svg('line', { y1: m.t, y2: y2(0), stroke: INK, 'stroke-width': 1, opacity: 0, 'pointer-events': 'none' }, root);
-      const dots = keys.map((k) => svg('circle', { r: 4.5, fill: SERIES[k].color, stroke: '#fff', 'stroke-width': 2, opacity: 0, 'pointer-events': 'none' }, root));
+      const dots = keys.map((k) => svg('circle', { r: 4.5, fill: SERIES[k].color, stroke: PAGE, 'stroke-width': 2, opacity: 0, 'pointer-events': 'none' }, root));
       const hit = svg('rect', { x: m.l, y: m.t, width: W - m.l - m.r, height: y2(0) - m.t, fill: 'transparent' }, root);
       const move = (e) => {
         const box = root.getBoundingClientRect();
@@ -848,7 +855,7 @@
       redraw.push(dynamicsPanel(chart, model, keys, { state, shade: opts.shade }));
     });
     $('.legend', root).innerHTML = keys.map((k) => `<span><i class="${SERIES[k].dash ? 'dash' : ''}" style="--c:${SERIES[k].color}"></i>${SERIES[k].name}</span>`).join('') +
-      '<span><i class="band" style="--c:#11141b"></i>95% bootstrap CI</span>';
+      '<span><i class="band" style="--c:var(--c-ink)"></i>95% bootstrap CI</span>';
     $('[data-raw]', root).addEventListener('change', (e) => { state.raw = e.target.checked; redraw.forEach((fn) => fn()); });
   }
 
@@ -856,14 +863,14 @@
     const host = $('#corr-grid');
     if (!host) return;
     const mix = (a, b, t) => a.map((v, i) => Math.round(v + (b[i] - v) * t));
-    const NEUTRAL = [240, 239, 236];
-    const POS = [63, 74, 99];
-    const NEG = [217, 102, 43];
+    const NEUTRAL = rgb('--c-corr-neutral', '30,35,48');
+    const POS = rgb('--c-corr-pos', '110,150,220');
+    const NEG = rgb('--c-corr-neg', '224,116,58');
     ['1.5B', '7B'].forEach((model) => {
       host.append(el('div', { class: 'rl' }, model));
       F.dynamics[model].corr.forEach((r, i) => {
         const c = mix(NEUTRAL, r >= 0 ? POS : NEG, Math.abs(r));
-        const cell = el('div', { class: 'corr-cell', tabindex: '0', style: `--bg:rgb(${c});--fg:${Math.abs(r) > 0.55 ? '#fff' : INK}` }, signed(r, 2));
+        const cell = el('div', { class: 'corr-cell', tabindex: '0', style: `--bg:rgb(${c});--fg:${Math.abs(r) > 0.55 ? cssv('--c-corr-strong', '#0c0f16') : INK}` }, signed(r, 2));
         bindTip(cell, () => `<span class="t-head">Qwen2.5-${model} · iterations ${i * 10 + 1}–${i * 10 + 10}</span>Pearson r between |A<sup>H</sup>| and |A<sup>F</sup>|: <b>${signed(r, 2)}</b>`);
         host.append(cell);
       });
@@ -954,14 +961,14 @@
         [['e', e], ['s', s], ['l', l]].forEach(([c, v]) => stack.append(el('div', { class: 'seg3 ' + c, style: `flex:${v} 1 0` }, v >= 13 ? one(v) : '')));
         bindTip(stack, () => `<span class="t-head">${cat} · ${name}</span>` +
           `<div class="t-row"><span><i style="--c:#d9662b"></i>Earlier than full CCPO</span><span>${one(e)}%</span></div>` +
-          `<div class="t-row"><span><i style="--c:#c9c9c5"></i>Same step</span><span>${one(s)}%</span></div>` +
+          `<div class="t-row"><span><i style="--c:var(--c-same)"></i>Same step</span><span>${one(s)}%</span></div>` +
           `<div class="t-row"><span><i style="--c:#2b74d1"></i>Later</span><span>${one(l)}%</span></div>`);
         row.append(el('div', { class: 'timing-cell' }, el('small', {}, name), stack));
       });
       host.append(row);
     });
     $('.legend', root).innerHTML =
-      '<span><i class="sq" style="--c:#d9662b"></i>Earlier</span><span><i class="sq" style="--c:#e6e6e3"></i>Same step</span><span><i class="sq" style="--c:#2b74d1"></i>Later</span>';
+      '<span><i class="sq" style="--c:#d9662b"></i>Earlier</span><span><i class="sq" style="--c:var(--c-same)"></i>Same step</span><span><i class="sq" style="--c:#2b74d1"></i>Later</span>';
   }
 
   // ------------------------------------------------------------------- startup
