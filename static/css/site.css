@@ -296,26 +296,27 @@ sup, sub { line-height: 0; }
 .stage-tabs { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
 .stage-tab {
   position: relative;
-  padding: 9px 8px 11px;
+  padding: 10px 10px 13px;
   background: transparent;
   border: 0;
   border-radius: 9px;
   text-align: left;
-  color: var(--night-mute);
-  font-size: 12.5px;
+  color: #b4bbc8;
+  font-size: 16px;
+  font-weight: 500;
   line-height: 1.25;
   overflow: hidden;
   transition: color 0.2s, background 0.2s;
 }
-.stage-tab b { display: block; font-family: var(--font-mono); font-size: 11px; font-weight: 500; letter-spacing: 0.08em; color: #6f778a; margin-bottom: 2px; }
-.stage-tab::after { content: ""; position: absolute; left: 8px; right: 8px; bottom: 3px; height: 2px; border-radius: 2px; background: rgba(255, 255, 255, 0.12); }
-.stage-tab::before { content: ""; position: absolute; left: 8px; bottom: 3px; height: 2px; width: 0; border-radius: 2px; background: var(--anchor); z-index: 1; }
+.stage-tab b { display: block; font-family: var(--font-mono); font-size: 12.5px; font-weight: 600; letter-spacing: 0.08em; color: #8a92a5; margin-bottom: 3px; }
+.stage-tab::after { content: ""; position: absolute; left: 10px; right: 10px; bottom: 3px; height: 2px; border-radius: 2px; background: rgba(255, 255, 255, 0.12); }
+.stage-tab::before { content: ""; position: absolute; left: 10px; bottom: 3px; height: 2px; width: 0; border-radius: 2px; background: var(--anchor); z-index: 1; }
 .stage-tab:hover { color: #fff; }
-.stage-tab.is-on { color: #fff; background: rgba(255, 255, 255, 0.05); }
+.stage-tab.is-on { color: #fff; font-weight: 600; background: rgba(255, 255, 255, 0.07); }
 .stage-tab.is-on b { color: #f59a55; }
-.stage-tab.is-on::before { width: calc(100% - 16px); }
+.stage-tab.is-on::before { width: calc(100% - 20px); }
 .stage.is-auto .stage-tab.is-on::before { animation: stage-progress var(--stage-ms, 4200ms) linear both; }
-@keyframes stage-progress { from { width: 0; } to { width: calc(100% - 16px); } }
+@keyframes stage-progress { from { width: 0; } to { width: calc(100% - 20px); } }
 
 .board { --step-gap: 9px; display: grid; gap: 38px 0; margin: 0; padding: 32px 0 18px; }
 .board-row { display: grid; grid-template-columns: 24px minmax(0, 1fr) 12px 30px; gap: 6px; align-items: center; }
@@ -1022,7 +1023,11 @@ table.data.is-compact thead tr:first-child th { padding-bottom: 9px; border-bott
   table.data.is-compact th, table.data.is-compact td { padding: 8px 3px; }
   table.data.is-compact thead tr:first-child th { font-size: 12px; }
   .paired { grid-template-columns: 1fr; }
-  .stage-tab { font-size: 11.5px; padding-inline: 5px; }
+  .stage-tab { font-size: 13px; padding-inline: 6px; }
+  .stage-tab b { font-size: 11px; }
+  .stage-tab::after, .stage-tab::before { left: 6px; }
+  .stage-tab::after { right: 6px; }
+  .stage-tab.is-on::before { width: calc(100% - 12px); }
   .stage-panel p { font-size: 14px; }
   .board { --step-gap: 5px; gap: 32px 0; padding: 30px 0 16px; }
   .board-row.is-gap { margin: -16px 0; }
