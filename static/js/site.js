@@ -120,20 +120,57 @@
     });
   }
 
-  // The hero video comes in a dark and a light rendering; play the one that matches the system theme.
+  // The hero video comes in a dark and a light rendering; play the one that matches the system theme,
+  // and keep it playing: browsers pause or stall muted video (off screen, low-power modes, slow loads),
+  // and there are no controls, so any pause is involuntary and gets undone.
   function themedVideo() {
     const v = $('.teaser-video');
     if (!v) return;
+    v.muted = true;
+    v.defaultMuted = true;
+    v.playsInline = true;
+    v.loop = true;
+    let onScreen = true;
+    const kick = () => {
+      if (onScreen && !document.hidden && v.paused && v.getAttribute('src')) v.play().catch(() => {});
+    };
     const dark = matchMedia('(prefers-color-scheme: dark)');
     const pick = () => {
       const src = dark.matches ? v.dataset.dark : v.dataset.light;
       if (v.getAttribute('src') === src) return;
       v.poster = src.replace('.mp4', '-poster.jpg');
       v.src = src;
-      v.play().catch(() => {});
+      v.load();
+      kick();
     };
     pick();
     dark.addEventListener('change', pick);
+    ['loadeddata', 'canplay', 'pause'].forEach((type) => v.addEventListener(type, kick));
+    v.addEventListener('ended', () => { v.currentTime = 0; kick(); });
+    document.addEventListener('visibilitychange', kick);
+    // Some browsers refuse autoplay until the visitor interacts with the page.
+    ['pointerdown', 'touchstart', 'keydown', 'scroll'].forEach((type) => addEventListener(type, kick, { passive: true }));
+    if ('IntersectionObserver' in window) {
+      new IntersectionObserver(([entry]) => { onScreen = entry.isIntersecting; kick(); }).observe(v);
+    }
+    // Watchdog: if the clock stops while the video should be playing, nudge it; if that fails, reload it.
+    let last = -1;
+    let still = 0;
+    setInterval(() => {
+      if (!onScreen || document.hidden) { still = 0; return; }
+      if (v.paused) { kick(); return; }
+      still = v.currentTime === last ? still + 1 : 0;
+      last = v.currentTime;
+      if (still === 3) {
+        v.currentTime = (v.currentTime + 0.05) % (v.duration || 1);
+        kick();
+      } else if (still >= 6) {
+        still = 0;
+        const t = v.currentTime;
+        v.load();
+        v.addEventListener('loadedmetadata', () => { v.currentTime = t; kick(); }, { once: true });
+      }
+    }, 1000);
   }
 
   const boot = () => { themedVideo(); findingTabs(); trackSections(); reveal(); lightbox(); copyButtons(); };
